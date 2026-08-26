@@ -58,6 +58,9 @@ export function CheckoutWizard({ state, formAction, pending }: Props) {
         <p className="mt-3 text-emerald-700">
           תישלח אליך הודעת אישור בוואטסאפ בהקדם. ניתן גם לפנות אלינו בכל שאלה.
         </p>
+        <p className="mt-2 font-medium text-emerald-800">
+          לגבי מועד המשלוח — ניצור איתך קשר בהמשך לתיאום מדויק, לקראת החג.
+        </p>
         <button
           onClick={() => router.push("/")}
           className="mt-6 rounded-full bg-emerald-600 px-6 py-2 font-semibold text-white hover:bg-emerald-700"
@@ -107,14 +110,6 @@ export function CheckoutWizard({ state, formAction, pending }: Props) {
             onChange={(e) => setPhone(e.target.value)}
             className="input"
             placeholder="0501234567"
-          />
-        </Field>
-        <Field label="אימייל (לא חובה)">
-          <input
-            name="email"
-            type="email"
-            className="input"
-            placeholder="name@example.com"
           />
         </Field>
         <Field label="שכונה">
@@ -186,6 +181,8 @@ export function CheckoutWizard({ state, formAction, pending }: Props) {
           יש להעביר את סכום המקדמה — <strong>{formatILS(depositAmount / 100)}</strong> —
           באפליקציית <strong>Bit</strong> למספר הטלפון שיימסר בהודעת האישור בוואטסאפ /
           שמופיע בעמוד יצירת הקשר. לאחר ביצוע ההעברה, יש לסמן זאת למטה.
+          <br />
+          <strong>מומלץ להעביר את המקדמה בהקדם על מנת לשריין את הסט עבורכם.</strong>
         </div>
 
         <label className="flex items-start gap-2 cursor-pointer">

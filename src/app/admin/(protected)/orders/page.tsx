@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { formatILS } from "@/lib/pricing";
 import { OrderStatusBadge } from "@/components/OrderStatusBadge";
 import { isGoogleSheetsConfigured } from "@/lib/googleSheets";
-import { manualSheetResync } from "@/actions/orders";
+import { manualSheetResync, markDelivered, unmarkDelivered } from "@/actions/orders";
 
 const STATUS_FILTERS = [
   { value: "", label: "הכל" },
@@ -80,6 +80,7 @@ export default async function AdminOrdersPage({
               <th className="px-4 py-3 text-right font-semibold">מקדמה</th>
               <th className="px-4 py-3 text-right font-semibold">סטטוס תשלום</th>
               <th className="px-4 py-3 text-right font-semibold">סטטוס הזמנה</th>
+              <th className="px-4 py-3 text-right font-semibold">הפצה</th>
               <th className="px-4 py-3 text-right font-semibold">תאריך</th>
             </tr>
           </thead>
@@ -98,9 +99,16 @@ export default async function AdminOrdersPage({
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  {o.items.length === 1
-                    ? `${o.items[0].setNameSnapshot} × ${o.items[0].quantity}`
-                    : `${o.items.reduce((s, i) => s + i.quantity, 0)} פריטים (${o.items.length} סוגים)`}
+                  <ul className="space-y-0.5">
+                    {o.items.map((item) => (
+                      <li key={item.id} className="whitespace-nowrap">
+                        {item.setNameSnapshot}
+                        {item.quantity > 1 && (
+                          <span className="mr-1 font-semibold text-emerald-700">× {item.quantity}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
                 </td>
                 <td className="px-4 py-3">{formatILS(o.totalPrice / 100)}</td>
                 <td className="px-4 py-3">{formatILS(o.depositAmount / 100)}</td>
@@ -122,6 +130,20 @@ export default async function AdminOrdersPage({
                 <td className="px-4 py-3">
                   <OrderStatusBadge status={o.status} />
                 </td>
+                <td className="px-4 py-3">
+                  <form action={(o.delivered ? unmarkDelivered : markDelivered).bind(null, o.id)}>
+                    <button
+                      className={`rounded-full px-2 py-1 text-xs font-semibold whitespace-nowrap ${
+                        o.delivered
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-neutral-100 text-neutral-500"
+                      }`}
+                      title="לחיצה לשינוי סטטוס הפצה"
+                    >
+                      {o.delivered ? "הופץ ✓" : "טרם הופץ"}
+                    </button>
+                  </form>
+                </td>
                 <td className="px-4 py-3 text-emerald-600">
                   {new Date(o.createdAt).toLocaleDateString("he-IL")}
                 </td>
@@ -129,7 +151,7 @@ export default async function AdminOrdersPage({
             ))}
             {orders.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-emerald-500">
+                <td colSpan={9} className="px-4 py-8 text-center text-emerald-500">
                   לא נמצאו הזמנות
                 </td>
               </tr>

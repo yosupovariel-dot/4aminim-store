@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SetCard } from "@/components/SetCard";
+import { RegularSetsBrowser } from "@/components/RegularSetsBrowser";
 import { DELIVERY_NOTICE, SITE } from "@/lib/site-content";
+import { HIDDUR_LABEL, HIDDUR_DESCRIPTION, HIDDUR_ORDER } from "@/lib/catalog";
 
 export default async function HomePage() {
   const sets = await prisma.productSet.findMany({
@@ -11,7 +13,13 @@ export default async function HomePage() {
   });
 
   const regularSets = sets.filter((s) => s.kind === "REGULAR");
-  const specialSets = sets.filter((s) => s.kind === "SPECIAL");
+  const specialSets = sets.filter((s) => {
+    if (s.kind !== "SPECIAL") return false;
+    const remaining = s.stockTotal != null ? s.stockTotal - s.stockSold : null;
+    // Once a special set sells out, it disappears from the site entirely
+    // instead of showing a "sold out" badge.
+    return remaining === null || remaining > 0;
+  });
 
   return (
     <div>
@@ -27,8 +35,9 @@ export default async function HomePage() {
             <br className="hidden sm:block" /> באיכות מהודרת, עד הבית
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-emerald-800 sm:text-lg">
-            שלושה סוגי סטים רגילים לבחירה, וסטים מיוחדים במהדורה מוגבלת. הזמנה
-            פשוטה באתר, ומשלוח אישי מתואם מראש לקראת החג.
+            סטים ברמות הידור שונות לבחירה, כולל אפשרויות אתרוג תימני ומרוקאי,
+            וסטים מיוחדים במהדורה מוגבלת. הזמנה פשוטה באתר, ומשלוח אישי מתואם
+            מראש לקראת החג.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
@@ -48,32 +57,54 @@ export default async function HomePage() {
       </section>
 
       {/* Regular sets */}
-      <section id="sets" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14">
-        <div className="mb-8 text-center">
+      <section id="sets" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:py-14">
+        <div className="mb-6 text-center sm:mb-8">
           <h2 className="text-2xl font-bold text-emerald-950 sm:text-3xl">
             הסטים הרגילים שלנו
           </h2>
           <p className="mt-2 text-emerald-700">
-            שלושה סוגי סטים, כל אחד עם סוג אתרוג משלו — בכמות בלתי מוגבלת.
+            בחרו סוג אתרוג ואת רמת ההידור המתאימה לכם — בכמות בלתי מוגבלת.
           </p>
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {regularSets.map((set) => (
-            <SetCard
-              key={set.id}
-              slug={set.slug}
-              name={set.name}
-              etrogType={set.etrogType}
-              price={set.price}
-              imageUrl={set.images[0]?.url || "/images/placeholder-set.svg"}
-            />
+        <RegularSetsBrowser
+          sets={regularSets.map((set) => ({
+            slug: set.slug,
+            name: set.name,
+            etrogType: set.etrogType,
+            hiddurLevel: set.hiddurLevel,
+            price: set.price,
+            imageUrl: set.images[0]?.url || "/images/placeholder-set.svg",
+            stockTotal: set.stockTotal,
+            stockSold: set.stockSold,
+          }))}
+        />
+      </section>
+
+      {/* Hiddur levels explainer */}
+      <section className="mx-auto max-w-6xl px-4 pb-10 sm:pb-14">
+        <div className="mb-6 text-center sm:mb-8">
+          <h2 className="text-xl font-bold text-emerald-950 sm:text-2xl">
+            מה ההבדל בין רמות ההידור?
+          </h2>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {HIDDUR_ORDER.map((level) => (
+            <div
+              key={level}
+              className="rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm"
+            >
+              <div className="text-sm font-bold text-emerald-800">{HIDDUR_LABEL[level]}</div>
+              <p className="mt-1.5 text-sm leading-relaxed text-emerald-700">
+                {HIDDUR_DESCRIPTION[level]}
+              </p>
+            </div>
           ))}
         </div>
       </section>
 
       {/* Special sets */}
       {specialSets.length > 0 && (
-        <section className="bg-gradient-to-b from-amber-50/70 to-transparent py-14">
+        <section className="bg-gradient-to-b from-amber-50/70 to-transparent py-10 sm:py-14">
           <div className="mx-auto max-w-6xl px-4">
             <div className="mb-8 text-center">
               <h2 className="text-2xl font-bold text-emerald-950 sm:text-3xl">
@@ -110,7 +141,7 @@ export default async function HomePage() {
       )}
 
       {/* Delivery */}
-      <section id="delivery" className="mx-auto max-w-4xl scroll-mt-24 px-4 py-14">
+      <section id="delivery" className="mx-auto max-w-4xl scroll-mt-24 px-4 py-10 sm:py-14">
         <div className="rounded-3xl border border-emerald-100 bg-white p-8 shadow-sm">
           <h2 className="text-2xl font-bold text-emerald-950">פרטי משלוח</h2>
           <ul className="mt-4 space-y-2 text-emerald-800">

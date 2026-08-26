@@ -12,22 +12,21 @@ export type LoginState = {
 
 export async function login(_prevState: LoginState, formData: FormData): Promise<LoginState> {
   const parsed = LoginSchema.safeParse({
-    username: formData.get("username"),
     password: formData.get("password"),
   });
 
   if (!parsed.success) {
-    return { error: "יש להזין שם משתמש וסיסמה" };
+    return { error: "יש להזין סיסמה" };
   }
 
-  const { username, password } = parsed.data;
+  const { password } = parsed.data;
 
-  const admin = await prisma.adminUser.findUnique({ where: { username } });
+  // Password-only login — there is exactly one admin account, so we look it
+  // up without a username field.
+  const admin = await prisma.adminUser.findFirst();
   if (!admin) {
-    // Constant-time-ish: still hash to avoid trivially distinguishing
-    // "user not found" from "wrong password" via timing.
     await bcrypt.compare(password, "$2b$10$invalidsaltinvalidsaltinvalidsal");
-    return { error: "שם משתמש או סיסמה שגויים" };
+    return { error: "סיסמה שגויה" };
   }
 
   if (admin.lockedUntil && admin.lockedUntil > new Date()) {
@@ -49,7 +48,7 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
             : admin.lockedUntil,
       },
     });
-    return { error: "שם משתמש או סיסמה שגויים" };
+    return { error: "סיסמה שגויה" };
   }
 
   if (admin.failedAttempts > 0 || admin.lockedUntil) {

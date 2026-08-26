@@ -7,7 +7,9 @@ import { logout } from "@/actions/auth";
 const LINKS = [
   { href: "/admin", label: "לוח בקרה", exact: true },
   { href: "/admin/orders", label: "הזמנות" },
+  { href: "/admin/customers", label: "לקוחות" },
   { href: "/admin/sets", label: "ניהול סטים" },
+  { href: "/admin/reports", label: "דוח רכש" },
 ];
 
 export function AdminSidebar() {

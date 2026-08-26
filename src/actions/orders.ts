@@ -29,7 +29,6 @@ export async function createOrder(
     items,
     customerName: formData.get("customerName"),
     phone: formData.get("phone"),
-    email: formData.get("email"),
     neighborhood: formData.get("neighborhood"),
     address: formData.get("address"),
     notes: formData.get("notes"),
@@ -101,7 +100,6 @@ export async function createOrder(
           depositAmount: calcDeposit(totalPrice),
           customerName: data.customerName,
           phone: data.phone,
-          email: data.email || null,
           neighborhood: data.neighborhood,
           address: data.address,
           notes: data.notes || null,
@@ -180,6 +178,34 @@ export async function setOrderStatus(orderId: string, status: "PENDING" | "CONFI
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/admin");
+  // Cancelling/un-cancelling can free up (or re-consume) a special set's
+  // last unit, so the public catalog needs to reflect that immediately.
+  revalidatePath("/");
+  revalidatePath("/sets/[slug]", "page");
+  await resyncOrdersSheet();
+}
+
+export async function markDelivered(orderId: string) {
+  await verifyAdminSession();
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { delivered: true, deliveredAt: new Date() },
+  });
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin/customers");
+  revalidatePath(`/admin/orders/${orderId}`);
+  await resyncOrdersSheet();
+}
+
+export async function unmarkDelivered(orderId: string) {
+  await verifyAdminSession();
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { delivered: false, deliveredAt: null },
+  });
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin/customers");
+  revalidatePath(`/admin/orders/${orderId}`);
   await resyncOrdersSheet();
 }
 

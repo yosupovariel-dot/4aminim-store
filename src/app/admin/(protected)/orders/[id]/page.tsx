@@ -8,6 +8,8 @@ import {
   unconfirmDeposit,
   setOrderStatus,
   saveAdminNotes,
+  markDelivered,
+  unmarkDelivered,
 } from "@/actions/orders";
 
 export default async function AdminOrderDetailPage({
@@ -20,6 +22,8 @@ export default async function AdminOrderDetailPage({
   const confirmDepositAction = confirmDeposit.bind(null, order.id);
   const unconfirmDepositAction = unconfirmDeposit.bind(null, order.id);
   const saveNotesAction = saveAdminNotes.bind(null, order.id);
+  const markDeliveredAction = markDelivered.bind(null, order.id);
+  const unmarkDeliveredAction = unmarkDelivered.bind(null, order.id);
 
   const itemsSummary = order.items
     .map((i) => `${i.setNameSnapshot} × ${i.quantity}`)
@@ -48,7 +52,6 @@ export default async function AdminOrderDetailPage({
           <h2 className="mb-2 font-bold text-emerald-950">פרטי לקוח</h2>
           <Row label="שם" value={order.customerName} />
           <Row label="טלפון" value={order.phone} dir="ltr" />
-          <Row label="אימייל" value={order.email || "—"} />
           <Row label="שכונה" value={order.neighborhood} />
           <Row label="כתובת" value={order.address} />
           {order.notes && <Row label="הערות לקוח" value={order.notes} />}
@@ -107,6 +110,31 @@ export default async function AdminOrderDetailPage({
           </div>
         </section>
       </div>
+
+      <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
+        <h2 className="mb-3 font-bold text-emerald-950">הפצה / מסירה</h2>
+        {order.delivered ? (
+          <div className="flex items-center gap-3">
+            <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
+              הופץ ללקוח ✓
+              {order.deliveredAt && (
+                <span className="mr-1 font-normal text-emerald-600">
+                  ({new Date(order.deliveredAt).toLocaleDateString("he-IL")})
+                </span>
+              )}
+            </span>
+            <form action={unmarkDeliveredAction}>
+              <button className="text-xs text-emerald-600 underline">בטל סימון</button>
+            </form>
+          </div>
+        ) : (
+          <form action={markDeliveredAction}>
+            <button className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+              סמן שהופץ ללקוח
+            </button>
+          </form>
+        )}
+      </section>
 
       <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
         <h2 className="mb-3 font-bold text-emerald-950">עדכון סטטוס הזמנה</h2>

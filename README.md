@@ -14,8 +14,8 @@ npm run seed              # קטלוג לדוגמה + משתמש מנהל
 npm run dev
 ```
 
-האתר יעלה בכתובת http://localhost:3000. כניסת מנהל: http://localhost:3000/admin/login
-עם הפרטים שמוגדרים ב-`.env` (`ADMIN_USERNAME` / `ADMIN_PASSWORD`).
+האתר יעלה בכתובת http://localhost:3000. כניסת מנהל: http://localhost:3000/admin/login —
+כניסה בסיסמה בלבד (ללא שם משתמש), לפי הערך שמוגדר ב-`.env` תחת `ADMIN_PASSWORD`.
 
 ## משתני סביבה (`.env`)
 
@@ -23,7 +23,7 @@ npm run dev
 |---|---|
 | `DATABASE_URL` | חיבור לבסיס הנתונים. מקומית: קובץ SQLite. בפרודקשן: Postgres מנוהל. |
 | `SESSION_SECRET` | מפתח לחתימת session מנהל. **חובה להחליף** לערך אקראי לפני העלאה לאוויר (`openssl rand -base64 32`). |
-| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | משמשים רק ל-seed הראשוני של משתמש המנהל. |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | משמשים ל-seed של משתמש המנהל. הכניסה בפועל היא בסיסמה בלבד — `ADMIN_USERNAME` הוא מזהה פנימי בלבד ואינו מוזן בטופס ההתחברות. שינוי `ADMIN_PASSWORD` ב-`.env` דורש הרצה חוזרת של `npm run seed` כדי שהסיסמה תתעדכן בפועל. |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | מזהה Google Analytics (G-XXXXXXX). ריק = לא נטען GA כלל. |
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | מספר הוואטסאפ לכפתור הצף, בפורמט בינלאומי ללא +. |
 

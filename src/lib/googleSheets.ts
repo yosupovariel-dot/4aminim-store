@@ -11,7 +11,6 @@ const HEADER = [
   "תאריך",
   "לקוח",
   "טלפון",
-  "אימייל",
   "סט",
   "סוג אתרוג",
   "כמות",
@@ -95,7 +94,6 @@ export async function resyncOrdersSheet() {
         new Date(o.createdAt).toLocaleString("he-IL"),
         o.customerName,
         o.phone,
-        o.email || "",
         item.setNameSnapshot,
         item.etrogTypeSnapshot,
         item.quantity,
@@ -122,7 +120,7 @@ export async function resyncOrdersSheet() {
 
     await sheets.spreadsheets.values.clear({
       spreadsheetId,
-      range: `${SHEET_NAME}!A2:S100000`,
+      range: `${SHEET_NAME}!A2:R100000`,
     });
 
     if (rows.length > 0) {

@@ -12,6 +12,17 @@ datasource db {
 enum SetKind {
   REGULAR
   SPECIAL
+  // A purchasable add-on that isn't a full four-species set (e.g. spare
+  // aravot, since aravot dry out within days and are worth replacing
+  // mid-holiday). Uses the same ProductSet/OrderItem plumbing as sets.
+  ADDON
+}
+
+enum HiddurLevel {
+  KOSHER
+  MEHADRIN
+  MEHADRIN_MIN_HAMEHADRIN
+  DIAMOND
 }
 
 enum OrderStatus {
@@ -36,6 +47,7 @@ model ProductSet {
   slug        String   @unique
   name        String
   etrogType   String
+  hiddurLevel HiddurLevel?
   description String
   price       Int
   // total stock only meaningful for SPECIAL sets; NULL/ignored for REGULAR (unlimited for now)
@@ -72,7 +84,6 @@ model Order {
 
   customerName      String
   phone             String
-  email             String?
   neighborhood      String
   address           String
   notes             String?
@@ -85,6 +96,9 @@ model Order {
   termsAccepted     Boolean     @default(false)
   status            OrderStatus @default(PENDING)
   adminNotes        String?
+
+  delivered         Boolean     @default(false)
+  deliveredAt       DateTime?
 
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt

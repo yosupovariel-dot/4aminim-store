@@ -14,11 +14,6 @@ export const OrderFormSchema = z.object({
     .string()
     .trim()
     .regex(/^0\d{8,9}$/, { error: "מספר טלפון לא תקין (לדוגמה: 0501234567)" }),
-  email: z
-    .email({ error: "כתובת אימייל לא תקינה" })
-    .trim()
-    .optional()
-    .or(z.literal("")),
   neighborhood: z.enum(NEIGHBORHOODS, {
     message: "יש לבחור שכונה",
   }),
@@ -35,6 +30,5 @@ export const OrderFormSchema = z.object({
 export type OrderFormValues = z.infer<typeof OrderFormSchema>;
 
 export const LoginSchema = z.object({
-  username: z.string().trim().min(1),
   password: z.string().min(1),
 });

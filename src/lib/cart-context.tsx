@@ -8,7 +8,7 @@ export type CartItem = {
   name: string;
   etrogType: string;
   price: number; // agorot, snapshot at add-time — re-validated server-side at checkout
-  kind: "REGULAR" | "SPECIAL";
+  kind: "REGULAR" | "SPECIAL" | "ADDON";
   stockRemaining: number | null; // null = unlimited (regular sets)
   quantity: number;
 };

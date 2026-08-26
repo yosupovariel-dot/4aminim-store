@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatILS } from "@/lib/pricing";
+import { isDefaultVariety } from "@/lib/catalog";
 
 type SetCardProps = {
   slug: string;
@@ -46,15 +47,23 @@ export function SetCard({
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">
         <h3 className="text-lg font-bold text-emerald-950">{name}</h3>
-        <p className="text-sm text-emerald-700">סוג אתרוג: {etrogType}</p>
+        {!isDefaultVariety(etrogType) && (
+          <p className="text-sm text-emerald-700">סוג אתרוג: {etrogType}</p>
+        )}
         {typeof remaining === "number" && remaining >= 0 && !soldOut && (
           <p className="text-xs font-medium text-amber-700">
             נותרו {remaining} יחידות בלבד
           </p>
         )}
+        <span className="inline-flex w-fit items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+          🎁 נרתיק במתנה
+        </span>
         <div className="mt-auto flex items-center justify-between pt-3">
-          <span className="text-xl font-extrabold text-emerald-800">
-            {formatILS(price / 100)}
+          <span>
+            <span className="text-xl font-extrabold text-emerald-800">
+              {formatILS(price / 100)}
+            </span>
+            <span className="block text-[11px] font-medium text-emerald-600">לסט המלא</span>
           </span>
           {soldOut ? (
             <span className="rounded-full bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-400">

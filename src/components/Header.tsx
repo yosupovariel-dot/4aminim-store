@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCart } from "@/lib/cart-context";
 
@@ -14,21 +15,26 @@ const NAV_LINKS = [
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const { itemCount } = useCart();
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [pathname]);
 
   return (
-    <div className="sticky top-0 z-40 flex justify-center px-2 pt-2 sm:px-4 sm:pt-3">
+    <div
+      className={`sticky top-0 z-40 flex justify-center transition-all duration-300 ${
+        scrolled ? "px-2 pt-2 sm:px-4 sm:pt-3" : "px-0 pt-0"
+      }`}
+    >
       <header
         className={`w-full transition-all duration-300 ease-out ${
           scrolled
-            ? "max-w-2xl rounded-full bg-white/90 shadow-lg shadow-emerald-900/10 backdrop-blur"
-            : "max-w-5xl rounded-2xl bg-white/70 shadow-sm backdrop-blur"
+            ? "max-w-4xl rounded-full bg-white/90 shadow-lg shadow-emerald-900/10 backdrop-blur"
+            : "max-w-none rounded-none bg-white/70 shadow-sm backdrop-blur"
         }`}
       >
         <div
@@ -41,20 +47,20 @@ export function Header() {
               🌿
             </span>
             <span
-              className={`font-semibold text-emerald-900 transition-all ${
+              className={`whitespace-nowrap font-semibold text-emerald-900 transition-all ${
                 scrolled ? "text-sm" : "text-base sm:text-lg"
               }`}
             >
-              ארבעת המינים לסוכות
+              ארבעת המינים לסוכות עד הבית
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-5 text-sm font-medium text-emerald-800">
+          <nav className="hidden md:flex items-center gap-5 whitespace-nowrap text-sm font-medium text-emerald-800">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="hover:text-emerald-600 transition-colors"
+                className="whitespace-nowrap hover:text-emerald-600 transition-colors"
               >
                 {link.label}
               </Link>

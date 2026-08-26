@@ -17,23 +17,13 @@ export default function AdminLoginPage() {
         <form action={formAction} className="space-y-4">
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-emerald-900">
-              שם משתמש
-            </span>
-            <input
-              name="username"
-              required
-              autoComplete="username"
-              className="w-full rounded-xl border border-emerald-200 px-4 py-2"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-emerald-900">
               סיסמה
             </span>
             <input
               name="password"
               type="password"
               required
+              autoFocus
               autoComplete="current-password"
               className="w-full rounded-xl border border-emerald-200 px-4 py-2"
             />

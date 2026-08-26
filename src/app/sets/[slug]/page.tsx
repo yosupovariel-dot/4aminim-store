@@ -3,6 +3,7 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { formatILS } from "@/lib/pricing";
 import { AddToCartControl } from "@/components/AddToCartControl";
+import { isDefaultVariety } from "@/lib/catalog";
 
 export default async function SetDetailPage({
   params,
@@ -21,6 +22,12 @@ export default async function SetDetailPage({
   const remaining =
     set.stockTotal != null ? Math.max(set.stockTotal - set.stockSold, 0) : null;
   const soldOut = remaining !== null && remaining <= 0;
+
+  // Sold-out special sets disappear from the site entirely rather than
+  // showing a "sold out" page.
+  if (set.kind === "SPECIAL" && soldOut) {
+    notFound();
+  }
 
   const media = set.images.length
     ? set.images
@@ -64,8 +71,14 @@ export default async function SetDetailPage({
             </span>
           )}
           <h1 className="text-3xl font-extrabold text-emerald-950">{set.name}</h1>
-          <p className="mt-2 text-emerald-700">סוג אתרוג: {set.etrogType}</p>
+          {!isDefaultVariety(set.etrogType) && (
+            <p className="mt-2 text-emerald-700">סוג אתרוג: {set.etrogType}</p>
+          )}
           <p className="mt-4 leading-relaxed text-emerald-900">{set.description}</p>
+
+          <span className="mt-3 inline-flex w-fit items-center gap-1 rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700">
+            🎁 נרתיק במתנה
+          </span>
 
           {typeof remaining === "number" && !soldOut && (
             <p className="mt-3 text-sm font-semibold text-amber-700">
@@ -73,8 +86,13 @@ export default async function SetDetailPage({
             </p>
           )}
 
-          <div className="mt-5 text-3xl font-extrabold text-emerald-800">
-            {formatILS(set.price / 100)}
+          <div className="mt-5">
+            <span className="text-3xl font-extrabold text-emerald-800">
+              {formatILS(set.price / 100)}
+            </span>
+            <span className="mr-2 text-sm font-medium text-emerald-600">
+              — מחיר לסט המלא (לולב, הדס, ערבה ואתרוג)
+            </span>
           </div>
 
           <div className="mt-8">

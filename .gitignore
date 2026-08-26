@@ -40,6 +40,10 @@ yarn-error.log*
 *.db
 *.db-journal
 
+# admin-uploaded set images (local dev only — see README before deploying:
+# production on Vercel needs persistent object storage instead of local disk)
+/public/uploads
+
 # auto-installed AI agent reference docs (not project code)
 /.claude/skills
 /.agents
