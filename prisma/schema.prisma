@@ -3,9 +3,7 @@ generator client {
 }
 
 datasource db {
-  // Local dev uses SQLite for zero-setup. Before deploying, switch to
-  // "postgresql" and point DATABASE_URL at your managed Postgres (see README).
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -69,23 +67,19 @@ model Order {
   items             OrderItem[]
   totalPrice        Int
   depositAmount     Int
-
   customerName      String
   phone             String
   email             String?
   neighborhood      String
   address           String
   notes             String?
-
   depositMarkedPaid Boolean     @default(false)
   depositMarkedAt   DateTime?
   depositConfirmed  Boolean     @default(false)
   depositConfirmedAt DateTime?
-
   termsAccepted     Boolean     @default(false)
   status            OrderStatus @default(PENDING)
   adminNotes        String?
-
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 }
