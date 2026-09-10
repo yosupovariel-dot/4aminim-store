@@ -2,14 +2,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatILS } from "@/lib/pricing";
+import { NEIGHBORHOODS } from "@/lib/validation";
 import { OrderStatusBadge } from "@/components/OrderStatusBadge";
+import { DeleteOrderButton } from "@/components/DeleteOrderButton";
 import {
   confirmDeposit,
   unconfirmDeposit,
-  setOrderStatus,
   saveAdminNotes,
   markDelivered,
   unmarkDelivered,
+  updateOrderDetails,
+  deleteOrder,
 } from "@/actions/orders";
 
 export default async function AdminOrderDetailPage({
@@ -19,11 +22,19 @@ export default async function AdminOrderDetailPage({
   const order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
   if (!order) notFound();
 
+  const otherOrders = await prisma.order.findMany({
+    where: { phone: order.phone, id: { not: order.id } },
+    orderBy: { createdAt: "desc" },
+    include: { items: true },
+  });
+
   const confirmDepositAction = confirmDeposit.bind(null, order.id);
   const unconfirmDepositAction = unconfirmDeposit.bind(null, order.id);
   const saveNotesAction = saveAdminNotes.bind(null, order.id);
   const markDeliveredAction = markDelivered.bind(null, order.id);
   const unmarkDeliveredAction = unmarkDelivered.bind(null, order.id);
+  const updateDetailsAction = updateOrderDetails.bind(null, order.id);
+  const deleteOrderAction = deleteOrder.bind(null, order.id);
 
   const itemsSummary = order.items
     .map((i) => `${i.setNameSnapshot} × ${i.quantity}`)
@@ -48,13 +59,65 @@ export default async function AdminOrderDetailPage({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm space-y-2">
+        <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
           <h2 className="mb-2 font-bold text-emerald-950">פרטי לקוח</h2>
-          <Row label="שם" value={order.customerName} />
-          <Row label="טלפון" value={order.phone} dir="ltr" />
-          <Row label="שכונה" value={order.neighborhood} />
-          <Row label="כתובת" value={order.address} />
-          {order.notes && <Row label="הערות לקוח" value={order.notes} />}
+          <form action={updateDetailsAction} className="space-y-2">
+            <label className="block text-sm">
+              <span className="mb-1 block text-emerald-700">שם</span>
+              <input
+                name="customerName"
+                defaultValue={order.customerName}
+                required
+                className="w-full rounded-lg border border-emerald-200 px-2 py-1.5"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1 block text-emerald-700">טלפון</span>
+              <input
+                name="phone"
+                defaultValue={order.phone}
+                required
+                dir="ltr"
+                className="w-full rounded-lg border border-emerald-200 px-2 py-1.5"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1 block text-emerald-700">שכונה</span>
+              <select
+                name="neighborhood"
+                defaultValue={order.neighborhood}
+                required
+                className="w-full rounded-lg border border-emerald-200 px-2 py-1.5"
+              >
+                {NEIGHBORHOODS.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1 block text-emerald-700">כתובת</span>
+              <input
+                name="address"
+                defaultValue={order.address}
+                required
+                className="w-full rounded-lg border border-emerald-200 px-2 py-1.5"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1 block text-emerald-700">הערות לקוח</span>
+              <textarea
+                name="notes"
+                defaultValue={order.notes || ""}
+                rows={2}
+                className="w-full rounded-lg border border-emerald-200 px-2 py-1.5"
+              />
+            </label>
+            <button className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+              שמירת פרטי לקוח
+            </button>
+          </form>
           <a
             href={customerWhatsappLink}
             target="_blank"
@@ -80,34 +143,48 @@ export default async function AdminOrderDetailPage({
             ))}
           </div>
           <Row label="מחיר כולל" value={formatILS(order.totalPrice / 100)} />
-          <Row label="מקדמה נדרשת" value={formatILS(order.depositAmount / 100)} />
+          {order.payFullInCash ? (
+            <Row label="אופן תשלום" value="הכל במזומן במסירה" />
+          ) : (
+            <>
+              <Row label="מקדמה נדרשת" value={formatILS(order.depositAmount / 100)} />
+              <Row
+                label="הלקוח סימן שהעביר"
+                value={order.depositMarkedPaid ? "כן" : "לא"}
+              />
+            </>
+          )}
           <Row
-            label="הלקוח סימן שהעביר"
-            value={order.depositMarkedPaid ? "כן" : "לא"}
+            label="יתרה לתשלום במסירה"
+            value={formatILS(
+              (order.payFullInCash ? order.totalPrice : order.totalPrice - order.depositAmount) / 100
+            )}
           />
           <Row
             label="תאריך אישור תקנון"
             value={new Date(order.createdAt).toLocaleString("he-IL")}
           />
 
-          <div className="pt-3">
-            {order.depositConfirmed ? (
-              <div className="flex items-center gap-3">
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
-                  מקדמה אושרה כהתקבלה ✓
-                </span>
-                <form action={unconfirmDepositAction}>
-                  <button className="text-xs text-emerald-600 underline">בטל אישור</button>
+          {!order.payFullInCash && (
+            <div className="pt-3">
+              {order.depositConfirmed ? (
+                <div className="flex items-center gap-3">
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
+                    מקדמה אושרה כהתקבלה ✓
+                  </span>
+                  <form action={unconfirmDepositAction}>
+                    <button className="text-xs text-emerald-600 underline">בטל אישור</button>
+                  </form>
+                </div>
+              ) : (
+                <form action={confirmDepositAction}>
+                  <button className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                    סמן שהמקדמה התקבלה בפועל
+                  </button>
                 </form>
-              </div>
-            ) : (
-              <form action={confirmDepositAction}>
-                <button className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
-                  סמן שהמקדמה התקבלה בפועל
-                </button>
-              </form>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </section>
       </div>
 
@@ -136,27 +213,37 @@ export default async function AdminOrderDetailPage({
         )}
       </section>
 
-      <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
-        <h2 className="mb-3 font-bold text-emerald-950">עדכון סטטוס הזמנה</h2>
-        <div className="flex flex-wrap gap-2">
-          {(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"] as const).map((status) => (
-            <form key={status} action={setOrderStatus.bind(null, order.id, status)}>
-              <button
-                disabled={order.status === status}
-                className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                  order.status === status
-                    ? "bg-emerald-100 text-emerald-400 cursor-not-allowed"
-                    : status === "CANCELLED"
-                    ? "bg-red-50 text-red-700 hover:bg-red-100"
-                    : "bg-emerald-600 text-white hover:bg-emerald-700"
+      {otherOrders.length > 0 && (
+        <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
+          <h2 className="mb-3 font-bold text-emerald-950">הזמנות נוספות מאותו לקוח</h2>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {otherOrders.map((o) => (
+              <Link
+                key={o.id}
+                href={`/admin/orders/${o.id}`}
+                className={`rounded-xl border p-3 text-sm transition-colors hover:bg-emerald-50 ${
+                  o.status === "CANCELLED" ? "border-neutral-200 bg-neutral-50" : "border-emerald-100"
                 }`}
               >
-                {STATUS_LABEL[status]}
-              </button>
-            </form>
-          ))}
-        </div>
-      </section>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="font-semibold text-emerald-800">#{o.orderNumber}</span>
+                  <span className="text-xs text-emerald-500">
+                    {new Date(o.createdAt).toLocaleDateString("he-IL")}
+                  </span>
+                </div>
+                <ul className="space-y-0.5 text-emerald-950">
+                  {o.items.map((item) => (
+                    <li key={item.id} className="flex items-center justify-between gap-2">
+                      <span className="truncate">{item.setNameSnapshot}</span>
+                      <span className="shrink-0 font-medium text-emerald-700">× {item.quantity}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
         <h2 className="mb-3 font-bold text-emerald-950">הערות מנהל (פנימי)</h2>
@@ -172,16 +259,20 @@ export default async function AdminOrderDetailPage({
           </button>
         </form>
       </section>
+
+      <section className="rounded-2xl border border-red-200 bg-red-50/50 p-5 shadow-sm">
+        <h2 className="mb-1 font-bold text-red-800">מחיקת הזמנה</h2>
+        <p className="mb-3 text-sm text-red-700">
+          מחיקה מסירה את ההזמנה לצמיתות ומחזירה את המלאי של הסטים שבה (כולל
+          החזרת סט מיוחד לתצוגה באתר אם רלוונטי). לא ניתן לבטל פעולה זו.
+        </p>
+        <form action={deleteOrderAction}>
+          <DeleteOrderButton orderNumber={order.orderNumber} />
+        </form>
+      </section>
     </div>
   );
 }
-
-const STATUS_LABEL: Record<string, string> = {
-  PENDING: "ממתינה",
-  CONFIRMED: "אושרה",
-  CANCELLED: "ביטול הזמנה",
-  COMPLETED: "הושלמה",
-};
 
 function Row({ label, value, dir }: { label: string; value: string; dir?: "ltr" | "rtl" }) {
   return (

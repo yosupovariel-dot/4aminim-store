@@ -108,10 +108,10 @@ export default async function HomePage() {
           <div className="mx-auto max-w-6xl px-4">
             <div className="mb-8 text-center">
               <h2 className="text-2xl font-bold text-emerald-950 sm:text-3xl">
-                סטים מיוחדים — מהדורה מוגבלת
+                סטים מיוחדים במינם
               </h2>
               <p className="mt-2 text-emerald-700">
-                כמות מוגבלת מאוד. מומלץ להזמין מראש לפני גמר המלאי.
+                כל סט הוא פריט ייחודי עם אתרוג מיוחד משלו — ברגע שהוא נמכר, הוא יורד מהאתר.
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

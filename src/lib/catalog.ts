@@ -40,3 +40,9 @@ export function isKnownVariety(value: string): value is Variety {
 export function isDefaultVariety(etrogType: string) {
   return etrogType === DEFAULT_VARIETY;
 }
+
+// Customer-facing etrog label: just "אתרוג" for the default variety, or
+// "אתרוג תימני" / "אתרוג מרוקאי" for the named exceptions. Never "אתרוג רגיל".
+export function customerEtrogLabel(etrogType: string) {
+  return isDefaultVariety(etrogType) ? "אתרוג" : `אתרוג ${etrogType}`;
+}

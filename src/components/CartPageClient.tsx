@@ -6,7 +6,7 @@ import { useCart } from "@/lib/cart-context";
 import { formatILS } from "@/lib/pricing";
 import { createOrder } from "@/actions/orders";
 import { CheckoutWizard, initialOrderState } from "@/components/CheckoutWizard";
-import { isDefaultVariety } from "@/lib/catalog";
+import { customerEtrogLabel } from "@/lib/catalog";
 
 type Addon = {
   id: string;
@@ -60,7 +60,9 @@ export function CartPageClient({ addon }: { addon: Addon | null }) {
                   <div className="text-xs text-emerald-600">
                     {item.kind === "ADDON"
                       ? "תוספת"
-                      : !isDefaultVariety(item.etrogType) && `סוג אתרוג: ${item.etrogType}`}
+                      : item.kind === "SPECIAL"
+                      ? item.etrogType
+                      : customerEtrogLabel(item.etrogType)}
                     {item.kind === "SPECIAL" && (
                       <span className="mr-2 rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">
                         סט מיוחד

@@ -54,6 +54,24 @@ export async function updateSet(setId: string, formData: FormData) {
   revalidateCatalog(setId);
 }
 
+// Quick-entry version of updateSet, used by the admin inventory page: sets
+// only how many units were brought in (stockTotal) for a regular set,
+// without touching name/price/description/etc.
+export async function updateStockBrought(setId: string, formData: FormData) {
+  await verifyAdminSession();
+
+  const raw = formData.get("stockTotal");
+  const stockTotal = raw === null || raw === "" ? null : Math.max(0, Math.trunc(Number(raw)));
+
+  await prisma.productSet.update({
+    where: { id: setId },
+    data: { stockTotal },
+  });
+
+  revalidatePath("/admin/inventory");
+  revalidateCatalog(setId);
+}
+
 function slugify(input: string) {
   // Hebrew names don't survive ASCII slugification, so we keep only a plain
   // ASCII base (if any) and always append a random suffix for uniqueness.
@@ -118,9 +136,17 @@ export async function uploadSetImage(setId: string, formData: FormData) {
   await verifyAdminSession();
 
   const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0) return;
-  if (file.size > MAX_IMAGE_BYTES) return;
-  if (!ALLOWED_TYPES.has(file.type)) return;
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("לא נבחר קובץ תמונה");
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    throw new Error(
+      `הקובץ גדול מדי (${(file.size / 1024 / 1024).toFixed(1)}MB) — הגודל המרבי הוא 6MB. יש לכווץ את התמונה ולנסות שוב.`
+    );
+  }
+  if (!ALLOWED_TYPES.has(file.type)) {
+    throw new Error("סוג קובץ לא נתמך — יש להעלות JPG, PNG, WEBP או GIF בלבד.");
+  }
 
   const ext = EXT_BY_TYPE[file.type] || "jpg";
   const filename = `${randomUUID()}.${ext}`;

@@ -38,7 +38,7 @@ export function Header() {
         }`}
       >
         <div
-          className={`flex items-center justify-between gap-3 px-4 transition-all duration-300 ${
+          className={`mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 transition-all duration-300 ${
             scrolled ? "py-2" : "py-3"
           }`}
         >

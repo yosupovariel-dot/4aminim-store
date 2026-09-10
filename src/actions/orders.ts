@@ -6,6 +6,7 @@ import { calcDeposit } from "@/lib/pricing";
 import { verifyAdminSession } from "@/lib/dal";
 import { resyncOrdersSheet } from "@/lib/googleSheets";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export type OrderActionState = {
   errors?: Record<string, string[]>;
@@ -32,7 +33,8 @@ export async function createOrder(
     neighborhood: formData.get("neighborhood"),
     address: formData.get("address"),
     notes: formData.get("notes"),
-    depositMarkedPaid: formData.get("depositMarkedPaid") === "on" ? true : undefined,
+    payFullInCash: formData.get("payFullInCash") === "on",
+    depositMarkedPaid: formData.get("depositMarkedPaid") === "on",
     termsAccepted: formData.get("termsAccepted") === "on" ? true : undefined,
   };
 
@@ -103,8 +105,9 @@ export async function createOrder(
           neighborhood: data.neighborhood,
           address: data.address,
           notes: data.notes || null,
-          depositMarkedPaid: true,
-          depositMarkedAt: new Date(),
+          payFullInCash: data.payFullInCash,
+          depositMarkedPaid: data.depositMarkedPaid,
+          depositMarkedAt: data.depositMarkedPaid ? new Date() : null,
           termsAccepted: true,
           items: { create: itemsToCreate },
         },
@@ -150,41 +153,6 @@ export async function unconfirmDeposit(orderId: string) {
   await resyncOrdersSheet();
 }
 
-export async function setOrderStatus(orderId: string, status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED") {
-  await verifyAdminSession();
-
-  await prisma.$transaction(async (tx) => {
-    const order = await tx.order.findUnique({ where: { id: orderId }, include: { items: true } });
-    if (!order) return;
-
-    const wasCancelled = order.status === "CANCELLED";
-    const willBeCancelled = status === "CANCELLED";
-
-    if (wasCancelled !== willBeCancelled) {
-      for (const item of order.items) {
-        const set = await tx.productSet.findUnique({ where: { id: item.setId } });
-        if (set?.stockTotal != null) {
-          await tx.productSet.update({
-            where: { id: set.id },
-            data: { stockSold: { increment: willBeCancelled ? -item.quantity : item.quantity } },
-          });
-        }
-      }
-    }
-
-    await tx.order.update({ where: { id: orderId }, data: { status } });
-  });
-
-  revalidatePath("/admin/orders");
-  revalidatePath(`/admin/orders/${orderId}`);
-  revalidatePath("/admin");
-  // Cancelling/un-cancelling can free up (or re-consume) a special set's
-  // last unit, so the public catalog needs to reflect that immediately.
-  revalidatePath("/");
-  revalidatePath("/sets/[slug]", "page");
-  await resyncOrdersSheet();
-}
-
 export async function markDelivered(orderId: string) {
   await verifyAdminSession();
   await prisma.order.update({
@@ -215,6 +183,64 @@ export async function saveAdminNotes(orderId: string, formData: FormData) {
   await prisma.order.update({ where: { id: orderId }, data: { adminNotes: notes } });
   revalidatePath(`/admin/orders/${orderId}`);
   await resyncOrdersSheet();
+}
+
+export async function updateOrderDetails(orderId: string, formData: FormData) {
+  await verifyAdminSession();
+
+  const customerName = String(formData.get("customerName") || "").trim();
+  const phone = String(formData.get("phone") || "").trim();
+  const neighborhood = String(formData.get("neighborhood") || "").trim();
+  const address = String(formData.get("address") || "").trim();
+  const notes = String(formData.get("notes") || "").trim();
+
+  if (!customerName || !phone || !neighborhood || !address) return;
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { customerName, phone, neighborhood, address, notes: notes || null },
+  });
+
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin/customers");
+  revalidatePath(`/admin/orders/${orderId}`);
+  await resyncOrdersSheet();
+}
+
+export async function deleteOrder(orderId: string) {
+  await verifyAdminSession();
+
+  await prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({ where: { id: orderId }, include: { items: true } });
+    if (!order) return;
+
+    // Restore stock for every item, unless it was already cancelled (in
+    // which case stock was already given back when it was cancelled).
+    if (order.status !== "CANCELLED") {
+      for (const item of order.items) {
+        const set = await tx.productSet.findUnique({ where: { id: item.setId } });
+        if (set?.stockTotal != null) {
+          await tx.productSet.update({
+            where: { id: set.id },
+            data: { stockSold: { decrement: item.quantity } },
+          });
+        }
+      }
+    }
+
+    // OrderItem rows cascade-delete with the order.
+    await tx.order.delete({ where: { id: orderId } });
+  });
+
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin/customers");
+  revalidatePath("/admin");
+  // Deleting an order can free up a special set's last unit, so the public
+  // catalog needs to reflect that immediately in every case.
+  revalidatePath("/");
+  revalidatePath("/sets/[slug]", "page");
+  await resyncOrdersSheet();
+  redirect("/admin/orders");
 }
 
 export async function manualSheetResync() {

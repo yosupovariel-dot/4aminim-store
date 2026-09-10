@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatILS } from "@/lib/pricing";
-import { isDefaultVariety } from "@/lib/catalog";
+import { customerEtrogLabel, isDefaultVariety } from "@/lib/catalog";
 
 type SetCardProps = {
   slug: string;
@@ -28,7 +28,7 @@ export function SetCard({
     <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm transition-shadow hover:shadow-lg">
       {special && (
         <span className="absolute right-3 top-3 z-10 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-amber-950 shadow">
-          סט מיוחד — כמות מוגבלת
+          סט מיוחד במינו
         </span>
       )}
       {soldOut && (
@@ -47,13 +47,24 @@ export function SetCard({
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">
         <h3 className="text-lg font-bold text-emerald-950">{name}</h3>
-        {!isDefaultVariety(etrogType) && (
-          <p className="text-sm text-emerald-700">סוג אתרוג: {etrogType}</p>
-        )}
-        {typeof remaining === "number" && remaining >= 0 && !soldOut && (
-          <p className="text-xs font-medium text-amber-700">
-            נותרו {remaining} יחידות בלבד
+        {(special || !isDefaultVariety(etrogType)) && (
+          <p className="text-sm text-emerald-700">
+            {special ? etrogType : customerEtrogLabel(etrogType)}
           </p>
+        )}
+        {!special && (
+          <p className="text-xs text-emerald-600">כולל את כל ארבעת המינים: לולב, הדס, ערבה ואתרוג</p>
+        )}
+        {special ? (
+          <p className="text-xs font-medium text-amber-700">
+            בהזמנה זו תבחרו את האתרוג המיוחד שמוצג, ותקבלו איתו את שאר שלושת המינים באיכות מהודרת
+          </p>
+        ) : (
+          typeof remaining === "number" && remaining >= 0 && !soldOut && (
+            <p className="text-xs font-medium text-amber-700">
+              נותרו {remaining} יחידות בלבד
+            </p>
+          )
         )}
         <span className="inline-flex w-fit items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
           🎁 נרתיק במתנה

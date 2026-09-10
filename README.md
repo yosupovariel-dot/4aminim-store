@@ -7,21 +7,39 @@
 
 ## הרצה מקומית
 
+בסיס הנתונים הוא Postgres מנוהל (Neon, מחובר דרך Vercel) — אותו בסיס נתונים
+משמש גם לפיתוח מקומי וגם לפרודקשן. אין יותר SQLite בפרויקט הזה.
+
 ```bash
 npm install
-npx prisma migrate dev   # יוצר את בסיס הנתונים המקומי (SQLite)
-npm run seed              # קטלוג לדוגמה + משתמש מנהל
+cp .env.example .env   # ומלאו DATABASE_URL / DATABASE_URL_UNPOOLED מ-Vercel
+npx prisma migrate deploy   # מריץ את סכימת בסיס הנתונים מול Postgres
+npm run seed                 # קטלוג לדוגמה + משתמש מנהל
 npm run dev
 ```
 
+**איך להשיג את משתני החיבור**: ב-Vercel Dashboard → הפרויקט → Storage →
+בסיס הנתונים → לשונית `.env.local` (או Quickstart) → העתיקו את הערכים
+`DATABASE_URL` ו-`DATABASE_URL_UNPOOLED`.
+
 האתר יעלה בכתובת http://localhost:3000. כניסת מנהל: http://localhost:3000/admin/login —
 כניסה בסיסמה בלבד (ללא שם משתמש), לפי הערך שמוגדר ב-`.env` תחת `ADMIN_PASSWORD`.
+
+> **הערה למחשבים עם IPv6 לא תקין**: אם `prisma migrate`/`npm run dev`
+> נכשלים עם `P1001: Can't reach database server` למרות שהחיבור לאינטרנט
+> תקין, ייתכן שהרשת שלכם "מפרסמת" כתובות IPv6 בלי ניתוב אמיתי, ו-Prisma
+> מנסה להתחבר דרכן במקום IPv4. פתרון (דורש הרשאת מנהל, הפיך):
+> ```powershell
+> Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" -Name "DisabledComponents" -Value 0x20 -Type DWord
+> Restart-Computer
+> ```
 
 ## משתני סביבה (`.env`)
 
 | משתנה | תיאור |
 |---|---|
-| `DATABASE_URL` | חיבור לבסיס הנתונים. מקומית: קובץ SQLite. בפרודקשן: Postgres מנוהל. |
+| `DATABASE_URL` | חיבור Postgres מאוגם (pooled) — משמש את האתר בזמן ריצה. |
+| `DATABASE_URL_UNPOOLED` | חיבור Postgres ישיר (ללא pooler) — נדרש להרצת migrations. |
 | `SESSION_SECRET` | מפתח לחתימת session מנהל. **חובה להחליף** לערך אקראי לפני העלאה לאוויר (`openssl rand -base64 32`). |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | משמשים ל-seed של משתמש המנהל. הכניסה בפועל היא בסיסמה בלבד — `ADMIN_USERNAME` הוא מזהה פנימי בלבד ואינו מוזן בטופס ההתחברות. שינוי `ADMIN_PASSWORD` ב-`.env` דורש הרצה חוזרת של `npm run seed` כדי שהסיסמה תתעדכן בפועל. |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | מזהה Google Analytics (G-XXXXXXX). ריק = לא נטען GA כלל. |
@@ -82,20 +100,21 @@ npm run dev
 
 ## פריסה לפרודקשן (Vercel)
 
-1. **בסיס נתונים**: הקימו בסיס Postgres מנוהל (Supabase / Neon / Vercel
-   Postgres). עדכנו את `prisma/schema.prisma`: שנו `provider = "sqlite"`
-   ל-`provider = "postgresql"`, ואז:
-   ```bash
-   npx prisma migrate dev --name init_postgres
-   ```
-2. הגדירו את משתני הסביבה בפרויקט ב-Vercel (`DATABASE_URL`,
-   `SESSION_SECRET` חדש וסודי, `ADMIN_USERNAME`/`ADMIN_PASSWORD` לצורך
-   ה-seed הראשוני, `NEXT_PUBLIC_GA_MEASUREMENT_ID`,
-   `NEXT_PUBLIC_WHATSAPP_NUMBER`).
-3. הריצו seed חד-פעמי מול בסיס הפרודקשן (`npm run seed` עם `DATABASE_URL`
-   של הפרודקשן), ואז **שנו את סיסמת המנהל** (או מחקו והחליפו את המשתמש).
-4. חברו את הריפו ל-Vercel ובצעו דיפלוי.
-5. חברו את חשבון Google Analytics ל-`NEXT_PUBLIC_GA_MEASUREMENT_ID`.
+הריפו מחובר ל-Vercel, ובסיס הנתונים (Postgres דרך Neon) כבר מחובר גם הוא —
+`DATABASE_URL` ו-`DATABASE_URL_UNPOOLED` מוזרקים אוטומטית על ידי אינטגרציית
+Neon של Vercel. פקודת ה-build (`npm run build`) מריצה אוטומטית
+`prisma migrate deploy` לפני הבנייה, כך שסכימת בסיס הנתונים מתעדכנת בכל
+דיפלוי.
+
+צעדים שנותרו בצד Vercel (חד-פעמי):
+
+1. הגדירו בפרויקט ב-Vercel: `SESSION_SECRET` (ערך אקראי וסודי —
+   `openssl rand -base64 32`), `ADMIN_USERNAME`/`ADMIN_PASSWORD` (לצורך
+   ה-seed הראשוני), `NEXT_PUBLIC_GA_MEASUREMENT_ID`,
+   `NEXT_PUBLIC_WHATSAPP_NUMBER`, ואופציונלית משתני Google Sheets.
+2. לאחר הדיפלוי הראשון, הריצו seed חד-פעמי מול בסיס הפרודקשן (למשל
+   `DATABASE_URL="..." DATABASE_URL_UNPOOLED="..." npm run seed` עם הערכים
+   של הפרודקשן), ואז **שנו את סיסמת המנהל** דרך `.env`+seed מחדש.
 
 ## אבטחה — מה כבר קיים
 

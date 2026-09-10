@@ -3,10 +3,13 @@ generator client {
 }
 
 datasource db {
-  // Local dev uses SQLite for zero-setup. Before deploying, switch to
-  // "postgresql" and point DATABASE_URL at your managed Postgres (see README).
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  // Managed Postgres (Neon, via Vercel's integration). DATABASE_URL is the
+  // pooled connection (used at runtime); DATABASE_URL_UNPOOLED bypasses the
+  // pooler and is required for running migrations. Both are auto-populated
+  // by Vercel's Neon integration — no extra env vars need to be added there.
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 enum SetKind {
@@ -92,6 +95,9 @@ model Order {
   depositMarkedAt   DateTime?
   depositConfirmed  Boolean     @default(false)
   depositConfirmedAt DateTime?
+  // Customer opted to pay the full amount in cash on delivery instead of
+  // transferring a deposit via Bit/PayBox now.
+  payFullInCash     Boolean     @default(false)
 
   termsAccepted     Boolean     @default(false)
   status            OrderStatus @default(PENDING)

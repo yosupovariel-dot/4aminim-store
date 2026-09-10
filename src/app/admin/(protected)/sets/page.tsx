@@ -200,7 +200,6 @@ function SetEditorCard({ set }: { set: SetWithImages }) {
 
           <form
             action={uploadAction}
-            encType="multipart/form-data"
             className="flex h-20 w-28 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-emerald-300 bg-emerald-50/50 px-2 text-center"
           >
             <input

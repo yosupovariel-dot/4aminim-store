@@ -25,6 +25,7 @@ export default async function AdminCustomersPage({
   const sp = await searchParams;
   const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase() : "";
   const setFilter = typeof sp.set === "string" ? sp.set : "";
+  const deliveredFilter = typeof sp.delivered === "string" ? sp.delivered : "";
 
   const [orders, filterOptions] = await Promise.all([
     prisma.order.findMany({
@@ -78,12 +79,35 @@ export default async function AdminCustomersPage({
     );
   }
 
+  const rowsWithDelivery = rows.map((c) => {
+    const activeOrders = c.orders.filter((o) => o.status !== "CANCELLED");
+    const deliveredCount = activeOrders.filter((o) => o.delivered).length;
+    const fullyDelivered = activeOrders.length > 0 && deliveredCount === activeOrders.length;
+    return { customer: c, activeOrders, deliveredCount, fullyDelivered };
+  });
+
+  const filteredByDelivery =
+    deliveredFilter === "yes"
+      ? rowsWithDelivery.filter((r) => r.fullyDelivered)
+      : deliveredFilter === "no"
+      ? rowsWithDelivery.filter((r) => !r.fullyDelivered)
+      : rowsWithDelivery;
+
+  const baseParams = new URLSearchParams();
+  if (q) baseParams.set("q", q);
+  if (setFilter) baseParams.set("set", setFilter);
+  const DELIVERY_TABS: { value: string; label: string }[] = [
+    { value: "", label: "הכל" },
+    { value: "yes", label: "קיבלו משלוח" },
+    { value: "no", label: "טרם קיבלו משלוח" },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold text-emerald-950">לקוחות</h1>
         <p className="mt-1 text-sm text-emerald-600">
-          {rows.length} לקוחות · כל שורה מציגה בדיוק אילו סטים ובאיזו כמות הוזמנו בכל הזמנה
+          {filteredByDelivery.length} לקוחות · כל שורה מציגה בדיוק אילו סטים ובאיזו כמות הוזמנו בכל הזמנה
         </p>
       </div>
 
@@ -121,10 +145,29 @@ export default async function AdminCustomersPage({
         )}
       </form>
 
+      <div className="flex flex-wrap gap-2">
+        {DELIVERY_TABS.map((tab) => {
+          const params = new URLSearchParams(baseParams);
+          if (tab.value) params.set("delivered", tab.value);
+          const href = params.toString() ? `/admin/customers?${params.toString()}` : "/admin/customers";
+          return (
+            <Link
+              key={tab.value}
+              href={href}
+              className={`rounded-full px-3 py-1.5 text-sm font-medium ${
+                deliveredFilter === tab.value
+                  ? "bg-emerald-600 text-white"
+                  : "bg-white text-emerald-800 ring-1 ring-emerald-200 hover:bg-emerald-50"
+              }`}
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
+      </div>
+
       <div className="grid gap-4">
-        {rows.map((c) => {
-          const activeOrders = c.orders.filter((o) => o.status !== "CANCELLED");
-          const deliveredCount = activeOrders.filter((o) => o.delivered).length;
+        {filteredByDelivery.map(({ customer: c, activeOrders, deliveredCount }) => {
           const deliveryLabel =
             activeOrders.length === 0
               ? "—"
@@ -202,7 +245,7 @@ export default async function AdminCustomersPage({
           );
         })}
 
-        {rows.length === 0 && (
+        {filteredByDelivery.length === 0 && (
           <p className="rounded-2xl border border-emerald-100 bg-white px-4 py-8 text-center text-emerald-500 shadow-sm">
             לא נמצאו לקוחות
           </p>

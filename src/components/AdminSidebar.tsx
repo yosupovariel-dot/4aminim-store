@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/admin/orders", label: "הזמנות" },
   { href: "/admin/customers", label: "לקוחות" },
   { href: "/admin/sets", label: "ניהול סטים" },
+  { href: "/admin/inventory", label: "מלאי" },
   { href: "/admin/reports", label: "דוח רכש" },
 ];
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { OrderActionState } from "@/actions/orders";
-import { formatILS } from "@/lib/pricing";
+import { formatILS, calcDeposit } from "@/lib/pricing";
 import { NEIGHBORHOODS } from "@/lib/validation";
 import { useCart } from "@/lib/cart-context";
 
@@ -25,8 +25,9 @@ export function CheckoutWizard({ state, formAction, pending }: Props) {
   const [phone, setPhone] = useState("");
   const [neighborhood, setNeighborhood] = useState<string>("");
   const [address, setAddress] = useState("");
+  const [payCash, setPayCash] = useState(false);
 
-  const depositAmount = Math.round((totalPrice * 20) / 100);
+  const depositAmount = calcDeposit(totalPrice);
   const itemsJson = JSON.stringify(
     items.map((i) => ({ setId: i.setId, quantity: i.quantity }))
   );
@@ -170,27 +171,86 @@ export function CheckoutWizard({ state, formAction, pending }: Props) {
           ))}
           <div className="my-1 h-px bg-emerald-200" />
           <Row label="מחיר כולל" value={formatILS(totalPrice / 100)} />
-          <Row
-            label="מקדמה לתשלום (20%)"
-            value={formatILS(depositAmount / 100)}
-            emphasize
-          />
+          {!payCash && (
+            <Row
+              label="מקדמה לתשלום (20%)"
+              value={formatILS(depositAmount / 100)}
+              emphasize
+            />
+          )}
         </div>
 
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 text-sm leading-relaxed">
-          יש להעביר את סכום המקדמה — <strong>{formatILS(depositAmount / 100)}</strong> —
-          באפליקציית <strong>Bit</strong> למספר הטלפון שיימסר בהודעת האישור בוואטסאפ /
-          שמופיע בעמוד יצירת הקשר. לאחר ביצוע ההעברה, יש לסמן זאת למטה.
-          <br />
-          <strong>מומלץ להעביר את המקדמה בהקדם על מנת לשריין את הסט עבורכם.</strong>
+        <div className="space-y-2">
+          <span className="block text-sm font-medium text-emerald-900">כיצד תרצו לשלם?</span>
+          <label className="flex items-start gap-2 cursor-pointer rounded-2xl border border-emerald-200 p-3">
+            <input
+              type="radio"
+              name="paymentMethod"
+              checked={!payCash}
+              onChange={() => setPayCash(false)}
+              className="mt-1 h-4 w-4 accent-emerald-600"
+            />
+            <span className="text-sm text-emerald-900">
+              מקדמה של 20% עכשיו בביט/פייבוקס, והיתרה במסירה
+            </span>
+          </label>
+          <label className="flex items-start gap-2 cursor-pointer rounded-2xl border border-emerald-200 p-3">
+            <input
+              type="radio"
+              name="paymentMethod"
+              checked={payCash}
+              onChange={() => setPayCash(true)}
+              className="mt-1 h-4 w-4 accent-emerald-600"
+            />
+            <span className="text-sm text-emerald-900">אעדיף לשלם את הסכום המלא במזומן במסירה</span>
+          </label>
         </div>
+        <input type="hidden" name="payFullInCash" value={payCash ? "on" : ""} />
 
-        <label className="flex items-start gap-2 cursor-pointer">
-          <input type="checkbox" name="depositMarkedPaid" required className="mt-1 h-4 w-4 accent-emerald-600" />
-          <span className="text-sm text-emerald-900">
-            אני מאשר/ת שהעברתי את סכום המקדמה בביט כאמור לעיל.
-          </span>
-        </label>
+        {payCash ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-sm leading-relaxed text-emerald-900">
+            הסכום המלא — <strong>{formatILS(totalPrice / 100)}</strong> — ייגבה במזומן במעמד
+            מסירת הסט. שימו לב: ללא מקדמה מראש, יש פחות ודאות בשריון הסט מראש.
+          </div>
+        ) : (
+          <>
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 text-sm leading-relaxed">
+              <p>
+                יש להעביר את סכום המקדמה — <strong>{formatILS(depositAmount / 100)}</strong> —
+                באפליקציית <strong>Bit</strong> או <strong>PayBox</strong> למספר{" "}
+                <strong dir="ltr">054-953-3757</strong>. לאחר ביצוע ההעברה, יש לסמן זאת למטה.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <a
+                  href={`bit://pay?phone=0549533757&sum=${Math.round(depositAmount / 100)}`}
+                  className="rounded-full bg-[#0FB5B0] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                >
+                  פתיחה באפליקציית Bit
+                </a>
+                <a
+                  href={`paybox://pay?phone=0549533757&sum=${Math.round(depositAmount / 100)}`}
+                  className="rounded-full bg-[#5B3EE8] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                >
+                  פתיחה באפליקציית PayBox
+                </a>
+              </div>
+              <p className="mt-2 text-xs text-amber-700">
+                הקישורים פותחים את האפליקציה במכשירים שבהם היא מותקנת. אם הקישור
+                לא נפתח, ניתן להעביר ידנית למספר שלמעלה.
+              </p>
+              <p className="mt-2">
+                <strong>מומלץ להעביר את המקדמה בהקדם על מנת לשריין את הסט עבורכם.</strong>
+              </p>
+            </div>
+
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" name="depositMarkedPaid" required className="mt-1 h-4 w-4 accent-emerald-600" />
+              <span className="text-sm text-emerald-900">
+                אני מאשר/ת שהעברתי את סכום המקדמה בביט כאמור לעיל.
+              </span>
+            </label>
+          </>
+        )}
 
         <label className="flex items-start gap-2 cursor-pointer">
           <input type="checkbox" name="termsAccepted" required className="mt-1 h-4 w-4 accent-emerald-600" />
