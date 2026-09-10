@@ -1,7 +1,7 @@
 import { PrismaClient, SetKind, HiddurLevel, MediaType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 
 // Real catalog: 3 etrog varieties × 4 hiddur levels = 12 regular sets.
 // Prices in agorot (1 ש"ח = 100).
@@ -122,7 +122,7 @@ const ADDON_SETS = [
   },
 ];
 
-async function main() {
+export async function runSeed() {
   for (const set of buildRegularSets()) {
     await prisma.productSet.upsert({
       where: { slug: set.slug },
@@ -188,12 +188,3 @@ async function main() {
   console.log("Seed complete.");
   console.log(`Admin login -> username: "${adminUsername}", password: (from .env ADMIN_PASSWORD)`);
 }
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
