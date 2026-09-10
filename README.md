@@ -12,15 +12,15 @@
 
 ```bash
 npm install
-cp .env.example .env   # ומלאו DATABASE_URL / DATABASE_URL_UNPOOLED מ-Vercel
-npx prisma migrate deploy   # מריץ את סכימת בסיס הנתונים מול Postgres
-npm run seed                 # קטלוג לדוגמה + משתמש מנהל
+cp .env.example .env   # ומלאו DATABASE_URL מ-Vercel
+npx prisma db push --accept-data-loss   # מסנכרן את סכימת בסיס הנתונים מול Postgres
+npm run seed                             # קטלוג לדוגמה + משתמש מנהל
 npm run dev
 ```
 
-**איך להשיג את משתני החיבור**: ב-Vercel Dashboard → הפרויקט → Storage →
-בסיס הנתונים → לשונית `.env.local` (או Quickstart) → העתיקו את הערכים
-`DATABASE_URL` ו-`DATABASE_URL_UNPOOLED`.
+**איך להשיג את משתנה החיבור**: ב-Vercel Dashboard → הפרויקט → Storage →
+בסיס הנתונים → לשונית `.env.local` (או Quickstart) → העתיקו את הערך
+`DATABASE_URL` (המאוגם/pooled).
 
 האתר יעלה בכתובת http://localhost:3000. כניסת מנהל: http://localhost:3000/admin/login —
 כניסה בסיסמה בלבד (ללא שם משתמש), לפי הערך שמוגדר ב-`.env` תחת `ADMIN_PASSWORD`.
@@ -38,8 +38,7 @@ npm run dev
 
 | משתנה | תיאור |
 |---|---|
-| `DATABASE_URL` | חיבור Postgres מאוגם (pooled) — משמש את האתר בזמן ריצה. |
-| `DATABASE_URL_UNPOOLED` | חיבור Postgres ישיר (ללא pooler) — נדרש להרצת migrations. |
+| `DATABASE_URL` | חיבור Postgres מאוגם (pooled) — משמש גם להרצה וגם ל-migrations. |
 | `SESSION_SECRET` | מפתח לחתימת session מנהל. **חובה להחליף** לערך אקראי לפני העלאה לאוויר (`openssl rand -base64 32`). |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | משמשים ל-seed של משתמש המנהל. הכניסה בפועל היא בסיסמה בלבד — `ADMIN_USERNAME` הוא מזהה פנימי בלבד ואינו מוזן בטופס ההתחברות. שינוי `ADMIN_PASSWORD` ב-`.env` דורש הרצה חוזרת של `npm run seed` כדי שהסיסמה תתעדכן בפועל. |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | מזהה Google Analytics (G-XXXXXXX). ריק = לא נטען GA כלל. |
@@ -101,10 +100,18 @@ npm run dev
 ## פריסה לפרודקשן (Vercel)
 
 הריפו מחובר ל-Vercel, ובסיס הנתונים (Postgres דרך Neon) כבר מחובר גם הוא —
-`DATABASE_URL` ו-`DATABASE_URL_UNPOOLED` מוזרקים אוטומטית על ידי אינטגרציית
-Neon של Vercel. פקודת ה-build (`npm run build`) מריצה אוטומטית
-`prisma migrate deploy` לפני הבנייה, כך שסכימת בסיס הנתונים מתעדכנת בכל
-דיפלוי.
+`DATABASE_URL` מוזרק אוטומטית על ידי אינטגרציית Neon של Vercel. ה-Build
+Command המוגדר בהגדרות הפרויקט ב-Vercel (Settings → General → Build
+Command) הוא:
+```
+npx prisma db push --accept-data-loss && next build
+```
+כך שסכימת בסיס הנתונים מתעדכנת בכל דיפלוי, בלי צורך בהרצת migration
+ידנית. שימו לב: `db push` מיישם שינויים ישירות בלי מעקב היסטוריית
+migrations — מתאים לפרויקט בקנה מידה כזה, אך אם ירצו בעתיד מעקב
+migrations מלא, אפשר לעדכן את ה-Build Command ל-
+`npx prisma migrate deploy && next build` ולהוסיף גם `DATABASE_URL_UNPOOLED`
+(חיבור Postgres ישיר, ללא pooler) כמשתנה סביבה בפרויקט.
 
 צעדים שנותרו בצד Vercel (חד-פעמי):
 
@@ -113,8 +120,8 @@ Neon של Vercel. פקודת ה-build (`npm run build`) מריצה אוטומט�
    ה-seed הראשוני), `NEXT_PUBLIC_GA_MEASUREMENT_ID`,
    `NEXT_PUBLIC_WHATSAPP_NUMBER`, ואופציונלית משתני Google Sheets.
 2. לאחר הדיפלוי הראשון, הריצו seed חד-פעמי מול בסיס הפרודקשן (למשל
-   `DATABASE_URL="..." DATABASE_URL_UNPOOLED="..." npm run seed` עם הערכים
-   של הפרודקשן), ואז **שנו את סיסמת המנהל** דרך `.env`+seed מחדש.
+   `DATABASE_URL="..." npm run seed` עם הערך של הפרודקשן), ואז **שנו את
+   סיסמת המנהל** דרך `.env`+seed מחדש.
 
 ## אבטחה — מה כבר קיים
 

@@ -3,13 +3,12 @@ generator client {
 }
 
 datasource db {
-  // Managed Postgres (Neon, via Vercel's integration). DATABASE_URL is the
-  // pooled connection (used at runtime); DATABASE_URL_UNPOOLED bypasses the
-  // pooler and is required for running migrations. Both are auto-populated
-  // by Vercel's Neon integration — no extra env vars need to be added there.
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  // Managed Postgres (Neon, via Vercel's integration). Only DATABASE_URL
+  // (pooled) is actually set as a Vercel project env var — deliberately not
+  // depending on a directUrl var that isn't configured there, to avoid
+  // requiring any manual Vercel dashboard changes.
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum SetKind {
