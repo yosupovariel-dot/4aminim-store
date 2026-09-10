@@ -84,13 +84,11 @@ model Order {
   items             OrderItem[]
   totalPrice        Int
   depositAmount     Int
-
   customerName      String
   phone             String
   neighborhood      String
   address           String
   notes             String?
-
   depositMarkedPaid Boolean     @default(false)
   depositMarkedAt   DateTime?
   depositConfirmed  Boolean     @default(false)
