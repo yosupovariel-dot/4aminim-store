@@ -1,8 +1,7 @@
 "use server";
 
 import { randomUUID } from "crypto";
-import { mkdir, unlink, writeFile } from "fs/promises";
-import path from "path";
+import { put, del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { verifyAdminSession } from "@/lib/dal";
 import { revalidatePath } from "next/cache";
@@ -149,11 +148,11 @@ export async function uploadSetImage(setId: string, formData: FormData) {
   }
 
   const ext = EXT_BY_TYPE[file.type] || "jpg";
-  const filename = `${randomUUID()}.${ext}`;
-  const dir = path.join(process.cwd(), "public", "uploads", "sets", setId);
-  await mkdir(dir, { recursive: true });
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(dir, filename), buffer);
+  const pathname = `sets/${setId}/${randomUUID()}.${ext}`;
+  const blob = await put(pathname, file, {
+    access: "public",
+    contentType: file.type,
+  });
 
   const existingCount = await prisma.setMedia.count({ where: { setId, type: "IMAGE" } });
 
@@ -161,7 +160,7 @@ export async function uploadSetImage(setId: string, formData: FormData) {
     data: {
       setId,
       type: "IMAGE",
-      url: `/uploads/sets/${setId}/${filename}`,
+      url: blob.url,
       sortOrder: existingCount,
     },
   });
@@ -199,10 +198,9 @@ export async function deleteSetImage(setId: string, mediaId: string) {
 
   await prisma.setMedia.delete({ where: { id: mediaId } });
 
-  if (media.url.startsWith("/uploads/")) {
-    const filePath = path.join(process.cwd(), "public", media.url);
-    await unlink(filePath).catch(() => {
-      // best-effort — a missing file on disk shouldn't block the deletion
+  if (media.url.includes(".blob.vercel-storage.com")) {
+    await del(media.url).catch(() => {
+      // best-effort — an already-missing blob shouldn't block the deletion
     });
   }
 
