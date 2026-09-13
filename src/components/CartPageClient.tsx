@@ -60,12 +60,17 @@ export function CartPageClient({ addon }: { addon: Addon | null }) {
                   <div className="text-xs text-emerald-600">
                     {item.kind === "ADDON"
                       ? "תוספת"
-                      : item.kind === "SPECIAL"
+                      : item.kind === "SPECIAL" || item.kind === "KIDS"
                       ? item.etrogType
                       : customerEtrogLabel(item.etrogType)}
                     {item.kind === "SPECIAL" && (
                       <span className="mr-2 rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">
                         סט מיוחד
+                      </span>
+                    )}
+                    {item.kind === "KIDS" && (
+                      <span className="mr-2 rounded-full bg-red-100 px-2 py-0.5 text-red-700">
+                        ⚠️ לא כשר לברכה
                       </span>
                     )}
                   </div>

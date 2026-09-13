@@ -19,6 +19,7 @@ export default async function AdminSetsPage() {
   const regularSets = sets.filter((s) => s.kind === "REGULAR");
   const specialSets = sets.filter((s) => s.kind === "SPECIAL");
   const addonSets = sets.filter((s) => s.kind === "ADDON");
+  const kidsSets = sets.filter((s) => s.kind === "KIDS");
 
   return (
     <div className="space-y-8">
@@ -106,6 +107,22 @@ export default async function AdminSetsPage() {
       </section>
 
       <section>
+        <h2 className="mb-3 text-lg font-bold text-emerald-950">סט לילדים (לא כשר)</h2>
+        <p className="mb-3 text-sm text-emerald-600">
+          סט זול להחזקה ומשחק לילדים בלבד — מסומן באתר באזהרה שהוא אינו כשר
+          לברכה.
+        </p>
+        <div className="grid gap-4">
+          {kidsSets.map((set) => (
+            <SetEditorCard key={set.id} set={set} />
+          ))}
+          {kidsSets.length === 0 && (
+            <p className="text-sm text-emerald-500">אין כרגע סט לילדים פעיל.</p>
+          )}
+        </div>
+      </section>
+
+      <section>
         <h2 className="mb-3 text-lg font-bold text-emerald-950">תוספות (Add-ons)</h2>
         <p className="mb-3 text-sm text-emerald-600">
           פריטים אופציונליים המוצעים בסל הקניות, כמו ערבות ספייר להחלפה.
@@ -135,7 +152,14 @@ function SetEditorCard({ set }: { set: SetWithImages }) {
     <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="text-xs text-emerald-500">
-          {set.kind === "SPECIAL" ? "סט מיוחד" : set.kind === "ADDON" ? "תוספת" : "סט רגיל"} · slug:{" "}
+          {set.kind === "SPECIAL"
+            ? "סט מיוחד"
+            : set.kind === "ADDON"
+            ? "תוספת"
+            : set.kind === "KIDS"
+            ? "סט לילדים (לא כשר)"
+            : "סט רגיל"}{" "}
+          · slug:{" "}
           {set.slug} · נמכרו: {set.stockSold}
         </div>
         {set.kind === "SPECIAL" ? (

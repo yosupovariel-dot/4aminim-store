@@ -12,7 +12,7 @@ type Props = {
     name: string;
     etrogType: string;
     price: number;
-    kind: "REGULAR" | "SPECIAL" | "ADDON";
+    kind: "REGULAR" | "SPECIAL" | "ADDON" | "KIDS";
   };
   remaining: number | null;
 };

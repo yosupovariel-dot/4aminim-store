@@ -44,19 +44,32 @@ export default async function SetDetailPage({
               סט מיוחד במינו
             </span>
           )}
+          {set.kind === "KIDS" && (
+            <span className="mb-3 inline-block rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
+              ⚠️ לא כשר לברכה
+            </span>
+          )}
           <h1 className="text-3xl font-extrabold text-emerald-950">{set.name}</h1>
           <p className="mt-2 text-emerald-700">
-            {set.kind === "SPECIAL" ? set.etrogType : customerEtrogLabel(set.etrogType)}
+            {set.kind === "SPECIAL" || set.kind === "KIDS"
+              ? set.etrogType
+              : customerEtrogLabel(set.etrogType)}
           </p>
           <p className="mt-4 leading-relaxed text-emerald-900">{set.description}</p>
 
-          <span className="mt-3 inline-flex w-fit items-center gap-1 rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700">
-            🎁 נרתיק במתנה
-          </span>
+          {set.kind !== "KIDS" && (
+            <span className="mt-3 inline-flex w-fit items-center gap-1 rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700">
+              🎁 נרתיק במתנה
+            </span>
+          )}
 
           {set.kind === "SPECIAL" ? (
             <p className="mt-3 text-sm font-semibold text-amber-700">
               בהזמנה זו תבחרו את האתרוג המיוחד שמוצג, ותקבלו איתו את שאר שלושת המינים באיכות מהודרת
+            </p>
+          ) : set.kind === "KIDS" ? (
+            <p className="mt-3 text-sm font-semibold text-red-700">
+              סט להחזקה ולמשחק לילדים בלבד — אינו כשר לקיום המצווה בפועל
             </p>
           ) : (
             typeof remaining === "number" && !soldOut && (

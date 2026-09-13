@@ -68,7 +68,7 @@ function buildRegularSets() {
         name: HIDDUR_LABEL[level],
         etrogType: variety,
         hiddurLevel: level,
-        description: `סט ארבעת המינים ברמת הידור "${HIDDUR_LABEL[level]}", עם אתרוג ${variety}. כולל לולב, הדסים, ערבות ואתרוג.`,
+        description: `סט ארבעת המינים ברמת הידור "${HIDDUR_LABEL[level]}", עם אתרוג ${variety}. כולל לולב, הדסים, ערבות ואתרוג. הסט הפרטני נבחר באופן רנדומלי מתוך המלאי ברמת ההידור שנרכשה — לא אתרוג ספציפי לבחירה אישית.`,
         price: VARIETY_PRICING[variety][level],
         sortOrder: sortOrder++,
       });
@@ -118,6 +118,20 @@ const ADDON_SETS = [
     description:
       "ערבות מתייבשות תוך מספר ימים — כדאי להחזיק זוג ערבות רזרביות כדי להחליף באמצע החג ולהמשיך לקיים את המצווה בהידור.",
     price: 700,
+    sortOrder: 1,
+  },
+];
+
+// A cheap, clearly-labeled set for children to hold and play with — NOT
+// kosher for fulfilling the mitzvah. Purchasable like a normal REGULAR set.
+const KIDS_SETS = [
+  {
+    slug: "kids-set",
+    name: "סט ארבעת המינים לילדים (להתנסות)",
+    etrogType: "סט לילדים",
+    description:
+      "סט קטן וחמוד לילדים, להחזקה, משחק והיכרות עם ארבעת המינים. הסט אינו כשר לברכה ואינו מיועד לקיום המצווה בפועל — מיועד להתנסות ולשמחת החג בלבד.",
+    price: 3900,
     sortOrder: 1,
   },
 ];
@@ -172,6 +186,14 @@ export async function runSeed() {
       where: { slug: set.slug },
       update: {},
       create: { ...set, kind: SetKind.ADDON },
+    });
+  }
+
+  for (const set of KIDS_SETS) {
+    await prisma.productSet.upsert({
+      where: { slug: set.slug },
+      update: {},
+      create: { ...set, kind: SetKind.KIDS },
     });
   }
 

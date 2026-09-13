@@ -18,6 +18,10 @@ enum SetKind {
   // aravot, since aravot dry out within days and are worth replacing
   // mid-holiday). Uses the same ProductSet/OrderItem plumbing as sets.
   ADDON
+  // A cheap, clearly-labeled set for children to hold/play with — NOT kosher
+  // for fulfilling the mitzvah. Purchasable normally (like REGULAR), just
+  // rendered with a warning instead of the premium "special set" framing.
+  KIDS
 }
 
 enum HiddurLevel {

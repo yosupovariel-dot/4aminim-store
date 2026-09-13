@@ -10,6 +10,7 @@ type SetCardProps = {
   price: number;
   imageUrl: string;
   special?: boolean;
+  kids?: boolean;
   soldOut?: boolean;
   remaining?: number | null;
 };
@@ -21,6 +22,7 @@ export function SetCard({
   price,
   imageUrl,
   special,
+  kids,
   soldOut,
   remaining,
 }: SetCardProps) {
@@ -29,6 +31,11 @@ export function SetCard({
       {special && (
         <span className="absolute right-3 top-3 z-10 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-amber-950 shadow">
           סט מיוחד במינו
+        </span>
+      )}
+      {kids && (
+        <span className="absolute right-3 top-3 z-10 rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700 shadow">
+          ⚠️ לא כשר לברכה
         </span>
       )}
       {soldOut && (
@@ -47,17 +54,21 @@ export function SetCard({
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">
         <h3 className="text-lg font-bold text-emerald-950">{name}</h3>
-        {(special || !isDefaultVariety(etrogType)) && (
+        {(special || kids || !isDefaultVariety(etrogType)) && (
           <p className="text-sm text-emerald-700">
-            {special ? etrogType : customerEtrogLabel(etrogType)}
+            {special || kids ? etrogType : customerEtrogLabel(etrogType)}
           </p>
         )}
-        {!special && (
+        {!special && !kids && (
           <p className="text-xs text-emerald-600">כולל את כל ארבעת המינים: לולב, הדס, ערבה ואתרוג</p>
         )}
         {special ? (
           <p className="text-xs font-medium text-amber-700">
             בהזמנה זו תבחרו את האתרוג המיוחד שמוצג, ותקבלו איתו את שאר שלושת המינים באיכות מהודרת
+          </p>
+        ) : kids ? (
+          <p className="text-xs font-medium text-red-700">
+            סט להחזקה ולמשחק לילדים בלבד — אינו כשר לקיום המצווה בפועל
           </p>
         ) : (
           typeof remaining === "number" && remaining >= 0 && !soldOut && (

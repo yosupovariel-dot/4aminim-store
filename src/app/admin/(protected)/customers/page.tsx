@@ -127,7 +127,7 @@ export default async function AdminCustomersPage({
           <option value="">כל הסטים</option>
           {filterOptions.map((s) => (
             <option key={s.slug} value={s.slug}>
-              {s.kind === "SPECIAL" ? "★ " : s.kind === "ADDON" ? "+ " : ""}
+              {s.kind === "SPECIAL" ? "★ " : s.kind === "ADDON" ? "+ " : s.kind === "KIDS" ? "🧸 " : ""}
               {s.name} ({s.etrogType})
             </option>
           ))}
