@@ -38,6 +38,29 @@ enum OrderStatus {
   COMPLETED
 }
 
+enum DedicationType {
+  REFUAH
+  ILUY_NESHAMA
+  HATZLACHA
+}
+
+// A pledge to donate a set (to a synagogue or a family in need — decided by
+// the business, not chosen by the donor) offered as a popup after checkout.
+// Deliberately not linked to ProductSet/OrderItem: it doesn't reserve real
+// inventory, just records the pledge and its dedication for fulfillment.
+model Donation {
+  id              String         @id @default(cuid())
+  hiddurLevel     HiddurLevel
+  dedicationType  DedicationType
+  dedicationName  String
+  donorName       String
+  donorPhone      String
+  amount          Int // agorot — snapshot of the רגיל price at that hiddur level
+  paidConfirmed   Boolean        @default(false)
+  paidConfirmedAt DateTime?
+  createdAt       DateTime       @default(now())
+}
+
 model AdminUser {
   id             String    @id @default(cuid())
   username       String    @unique

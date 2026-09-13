@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/admin/sets", label: "ניהול סטים" },
   { href: "/admin/inventory", label: "מלאי" },
   { href: "/admin/reports", label: "דוח רכש" },
+  { href: "/admin/donations", label: "תרומות" },
 ];
 
 export function AdminSidebar() {

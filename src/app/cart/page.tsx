@@ -7,6 +7,18 @@ export default async function CartPage() {
     orderBy: { sortOrder: "asc" },
   });
 
+  // Donation pricing mirrors the רגיל (default variety) price per hiddur
+  // level — donations aren't tied to a specific set or its stock.
+  const donationSets = await prisma.productSet.findMany({
+    where: { kind: "REGULAR", etrogType: "רגיל", active: true },
+    select: { hiddurLevel: true, price: true },
+  });
+  const hiddurPricing = Object.fromEntries(
+    donationSets
+      .filter((s) => s.hiddurLevel != null)
+      .map((s) => [s.hiddurLevel as string, s.price])
+  );
+
   return (
     <CartPageClient
       addon={
@@ -21,6 +33,7 @@ export default async function CartPage() {
             }
           : null
       }
+      hiddurPricing={hiddurPricing}
     />
   );
 }

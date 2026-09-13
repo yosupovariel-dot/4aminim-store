@@ -78,6 +78,16 @@ export default async function HomePage() {
             stockTotal: set.stockTotal,
             stockSold: set.stockSold,
           }))}
+          kidsSets={kidsSets.map((set) => ({
+            slug: set.slug,
+            name: set.name,
+            etrogType: set.etrogType,
+            hiddurLevel: set.hiddurLevel,
+            price: set.price,
+            imageUrl: set.images[0]?.url || "/images/placeholder-set.svg",
+            stockTotal: set.stockTotal,
+            stockSold: set.stockSold,
+          }))}
         />
       </section>
 
@@ -136,34 +146,6 @@ export default async function HomePage() {
                   />
                 );
               })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Kids set */}
-      {kidsSets.length > 0 && (
-        <section className="bg-gradient-to-b from-red-50/60 to-transparent py-10 sm:py-14">
-          <div className="mx-auto max-w-6xl px-4">
-            <div className="mb-8 text-center">
-              <h2 className="text-2xl font-bold text-emerald-950 sm:text-3xl">סט לילדים</h2>
-              <p className="mt-2 text-emerald-700">
-                סט קטן להחזקה ולמשחק — <span className="font-semibold text-red-700">אינו כשר לברכה</span> ואינו
-                מיועד לקיום המצווה בפועל.
-              </p>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {kidsSets.map((set) => (
-                <SetCard
-                  key={set.id}
-                  slug={set.slug}
-                  name={set.name}
-                  etrogType={set.etrogType}
-                  price={set.price}
-                  imageUrl={set.images[0]?.url || "/images/placeholder-set.svg"}
-                  kids
-                />
-              ))}
             </div>
           </div>
         </section>

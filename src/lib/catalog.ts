@@ -1,4 +1,4 @@
-import type { HiddurLevel } from "@prisma/client";
+import type { HiddurLevel, DedicationType } from "@prisma/client";
 
 // Shared catalog vocabulary: etrog varieties and hiddur (kashrut level) tiers,
 // used across the homepage, set detail page, and admin sets/reports pages.
@@ -46,3 +46,10 @@ export function isDefaultVariety(etrogType: string) {
 export function customerEtrogLabel(etrogType: string) {
   return isDefaultVariety(etrogType) ? "אתרוג" : `אתרוג ${etrogType}`;
 }
+
+// Donation dedication — the prefix phrase before the dedicated person's name.
+export const DEDICATION_LABEL: Record<DedicationType, string> = {
+  REFUAH: "לרפואת",
+  ILUY_NESHAMA: "לעילוי נשמת",
+  HATZLACHA: "להצלחת",
+};

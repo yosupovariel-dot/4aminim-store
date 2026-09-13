@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
+import type { HiddurLevel } from "@prisma/client";
 import { useCart } from "@/lib/cart-context";
 import { formatILS } from "@/lib/pricing";
 import { createOrder } from "@/actions/orders";
@@ -17,7 +18,13 @@ type Addon = {
   price: number;
 };
 
-export function CartPageClient({ addon }: { addon: Addon | null }) {
+export function CartPageClient({
+  addon,
+  hiddurPricing,
+}: {
+  addon: Addon | null;
+  hiddurPricing: Partial<Record<HiddurLevel, number>>;
+}) {
   const { items, totalPrice, updateQuantity, removeItem, addItem } = useCart();
   const [state, formAction, pending] = useActionState(createOrder, initialOrderState);
 
@@ -157,7 +164,12 @@ export function CartPageClient({ addon }: { addon: Addon | null }) {
         </>
       )}
 
-      <CheckoutWizard state={state} formAction={formAction} pending={pending} />
+      <CheckoutWizard
+        state={state}
+        formAction={formAction}
+        pending={pending}
+        hiddurPricing={hiddurPricing}
+      />
     </div>
   );
 }

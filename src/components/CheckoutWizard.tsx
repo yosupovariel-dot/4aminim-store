@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { HiddurLevel } from "@prisma/client";
 import type { OrderActionState } from "@/actions/orders";
 import { formatILS, calcDeposit } from "@/lib/pricing";
 import { NEIGHBORHOODS } from "@/lib/validation";
 import { useCart } from "@/lib/cart-context";
+import { DonationBanner } from "@/components/DonationBanner";
 
 export const initialOrderState: OrderActionState = {};
 
@@ -14,9 +16,10 @@ type Props = {
   state: OrderActionState;
   formAction: (formData: FormData) => void;
   pending: boolean;
+  hiddurPricing: Partial<Record<HiddurLevel, number>>;
 };
 
-export function CheckoutWizard({ state, formAction, pending }: Props) {
+export function CheckoutWizard({ state, formAction, pending, hiddurPricing }: Props) {
   const router = useRouter();
   const { items, totalPrice, clear } = useCart();
   const [step, setStep] = useState<1 | 2>(1);
@@ -68,6 +71,7 @@ export function CheckoutWizard({ state, formAction, pending }: Props) {
         >
           חזרה לדף הבית
         </button>
+        <DonationBanner hiddurPricing={hiddurPricing} />
       </div>
     );
   }

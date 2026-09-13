@@ -36,3 +36,20 @@ export type OrderFormValues = z.infer<typeof OrderFormSchema>;
 export const LoginSchema = z.object({
   password: z.string().min(1),
 });
+
+export const DEDICATION_TYPES = ["REFUAH", "ILUY_NESHAMA", "HATZLACHA"] as const;
+
+export const DonationFormSchema = z.object({
+  hiddurLevel: z.enum(["KOSHER", "MEHADRIN", "MEHADRIN_MIN_HAMEHADRIN", "DIAMOND"], {
+    message: "יש לבחור רמת הידור",
+  }),
+  dedicationType: z.enum(DEDICATION_TYPES, { message: "יש לבחור סוג הקדשה" }),
+  dedicationName: z.string().trim().min(2, { error: "יש להזין שם" }),
+  donorName: z.string().trim().min(2, { error: "יש להזין שם מלא" }),
+  donorPhone: z
+    .string()
+    .trim()
+    .regex(/^0\d{8,9}$/, { error: "מספר טלפון לא תקין (לדוגמה: 0501234567)" }),
+});
+
+export type DonationFormValues = z.infer<typeof DonationFormSchema>;
