@@ -49,7 +49,7 @@ export function SetCard({
           alt={`תמונה של ${name}`}
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
         />
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">

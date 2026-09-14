@@ -45,7 +45,7 @@ export function RegularSetsBrowser({
       <div
         role="tablist"
         aria-label="בחירת סוג סט"
-        className="mb-6 flex justify-center gap-2 overflow-x-auto px-1"
+        className="mb-6 flex flex-wrap justify-center gap-2 px-2"
       >
         {varieties.map((variety) => (
           <button

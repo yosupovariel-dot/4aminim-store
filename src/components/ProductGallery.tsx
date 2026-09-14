@@ -28,7 +28,7 @@ export function ProductGallery({ media, alt }: { media: MediaItem[]; alt: string
             alt={alt}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-cover"
+            className="object-contain p-2"
             priority={active === 0}
           />
         )}
@@ -87,7 +87,7 @@ export function ProductGallery({ media, alt }: { media: MediaItem[]; alt: string
               {m.type === "VIDEO" ? (
                 <div className="flex h-full w-full items-center justify-center bg-neutral-800 text-white">▶</div>
               ) : (
-                <Image src={m.url} alt="" fill className="object-cover" />
+                <Image src={m.url} alt="" fill className="object-contain p-0.5" />
               )}
             </button>
           ))}

@@ -45,6 +45,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/photo-credits" className="hover:text-emerald-900">
+                קרדיטים לתמונות
+              </Link>
+            </li>
+            <li>
               <Link href="/admin/login" className="hover:text-emerald-900">
                 כניסת מנהל
               </Link>

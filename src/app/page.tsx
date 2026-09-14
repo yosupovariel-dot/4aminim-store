@@ -3,6 +3,7 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { SetCard } from "@/components/SetCard";
 import { RegularSetsBrowser } from "@/components/RegularSetsBrowser";
+import { SpeciesGallery } from "@/components/SpeciesGallery";
 import { DELIVERY_NOTICE, SITE } from "@/lib/site-content";
 import { HIDDUR_LABEL, HIDDUR_DESCRIPTION, HIDDUR_ORDER } from "@/lib/catalog";
 
@@ -56,19 +57,26 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="relative mx-auto mt-10 aspect-[16/10] w-full max-w-3xl overflow-hidden rounded-3xl shadow-lg sm:mt-14">
-            <Image
-              src="/images/hero-etrogim.jpg"
-              alt="מבחר אתרוגים אמיתיים מהמלאי שלנו, ברמות הידור שונות"
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 768px"
-              className="object-cover"
+          <div className="relative mx-auto mt-10 h-48 w-48 sm:mt-14 sm:h-60 sm:w-60">
+            <div
+              className="absolute inset-0 animate-spin rounded-[2.25rem] bg-[conic-gradient(from_0deg,#059669,#fde047,#f59e0b,#059669,#6ee7b7,#059669)]"
+              style={{ animationDuration: "6s" }}
+              aria-hidden
             />
-            <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-              מהמלאי שלנו — בדיקת הידור לפני אריזה
-            </span>
+            <div className="absolute inset-[5px] overflow-hidden rounded-[1.85rem] bg-emerald-50 shadow-lg">
+              <Image
+                src="/images/hero-etrogim.jpg"
+                alt="מבחר אתרוגים אמיתיים מהמלאי שלנו, ברמות הידור שונות"
+                fill
+                priority
+                sizes="240px"
+                className="object-contain p-1.5"
+              />
+            </div>
           </div>
+          <p className="mt-3 text-xs font-medium text-emerald-600">
+            מהמלאי שלנו — בדיקת הידור לפני אריזה
+          </p>
         </div>
       </section>
 
@@ -127,6 +135,8 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      <SpeciesGallery />
 
       {/* Special sets */}
       {specialSets.length > 0 && (
