@@ -22,6 +22,7 @@ export async function createDonation(
     dedicationName: formData.get("dedicationName"),
     donorName: formData.get("donorName"),
     donorPhone: formData.get("donorPhone"),
+    paidConfirmed: formData.get("paidConfirmed") === "on" ? true : undefined,
   };
 
   const parsed = DonationFormSchema.safeParse(raw);

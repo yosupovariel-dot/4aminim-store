@@ -6,6 +6,7 @@ import { createDonation, type DonationActionState } from "@/actions/donations";
 import { formatILS } from "@/lib/pricing";
 import { HIDDUR_ORDER, HIDDUR_LABEL, DEDICATION_LABEL } from "@/lib/catalog";
 import { DEDICATION_TYPES } from "@/lib/validation";
+import { CopyButton } from "@/components/CopyButton";
 
 const initialState: DonationActionState = {};
 
@@ -31,24 +32,10 @@ export function DonationBanner({ hiddurPricing }: { hiddurPricing: HiddurPricing
             </div>
             <h2 className="text-xl font-bold text-emerald-950">תודה רבה על התרומה!</h2>
             <p className="mt-3 text-sm leading-relaxed text-emerald-800">
-              יש להעביר את הסכום המלא — <strong>{formatILS((state.amount ?? 0) / 100)}</strong> —
-              באפליקציית <strong>Bit</strong> או <strong>PayBox</strong> למספר{" "}
-              <strong dir="ltr">054-953-3757</strong>.
+              קיבלנו את פרטי התרומה שלכם. אם ההעברה של{" "}
+              <strong>{formatILS((state.amount ?? 0) / 100)}</strong> טרם בוצעה בפועל, נא לוודא
+              שהיא מתבצעת — אחרת התרומה תבוטל.
             </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
-              <a
-                href={`bit://pay?phone=0549533757&sum=${Math.round((state.amount ?? 0) / 100)}`}
-                className="rounded-full bg-[#0FB5B0] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-              >
-                פתיחה באפליקציית Bit
-              </a>
-              <a
-                href={`paybox://pay?phone=0549533757&sum=${Math.round((state.amount ?? 0) / 100)}`}
-                className="rounded-full bg-[#5B3EE8] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-              >
-                פתיחה באפליקציית PayBox
-              </a>
-            </div>
             <button
               type="button"
               onClick={() => setDismissed(true)}
@@ -66,6 +53,9 @@ export function DonationBanner({ hiddurPricing }: { hiddurPricing: HiddurPricing
             <p className="mt-2 text-sm leading-relaxed text-emerald-700">
               אנחנו מעבירים תרומות של סטים לבתי כנסת ולמשפחות נזקקות לקראת החג.
               אפשר לתרום סט על שמכם או לעילוי נשמה / לרפואה / להצלחה.
+            </p>
+            <p className="mt-2 text-xs font-medium text-amber-700">
+              התרומה כרוכה בהעברת מלוא הסכום (100%) מראש בביט/פייבוקס.
             </p>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
               <button
@@ -153,6 +143,38 @@ export function DonationBanner({ hiddurPricing }: { hiddurPricing: HiddurPricing
               />
             </label>
 
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
+              <p>
+                יש להעביר <strong>כעת, מראש</strong> את מלוא הסכום (100% — לא מקדמה) —{" "}
+                <strong>{formatILS((hiddurPricing[hiddurLevel] ?? 0) / 100)}</strong> — באפליקציית{" "}
+                <strong>Bit</strong> או <strong>PayBox</strong> למספר{" "}
+                <strong dir="ltr">054-953-3757</strong>.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <CopyButton value="0549533757" label="העתקת מספר הטלפון" />
+                <CopyButton
+                  value={String(Math.round((hiddurPricing[hiddurLevel] ?? 0) / 100))}
+                  label="העתקת הסכום"
+                />
+              </div>
+              <p className="mt-2 font-semibold text-red-700">
+                שימו לב: אם הסכום המלא לא יתקבל בפועל, התרומה תבוטל אוטומטית.
+              </p>
+            </div>
+
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="paidConfirmed"
+                required
+                className="mt-1 h-4 w-4 accent-emerald-600"
+              />
+              <span className="text-sm text-emerald-900">
+                אני מאשר/ת שהעברתי את מלוא הסכום (100%) בביט/פייבוקס כאמור לעיל, ומבין/ה
+                שאם ההעברה לא תתקבל בפועל התרומה תבוטל.
+              </span>
+            </label>
+
             {state.message && <p className="text-sm font-medium text-red-600">{state.message}</p>}
             {state.errors && (
               <ul className="space-y-1 text-sm text-red-600">
@@ -167,7 +189,7 @@ export function DonationBanner({ hiddurPricing }: { hiddurPricing: HiddurPricing
               disabled={pending}
               className="w-full rounded-full bg-emerald-600 py-3 font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60"
             >
-              {pending ? "שולח..." : "המשך לתשלום"}
+              {pending ? "שולח..." : "שליחת התרומה"}
             </button>
 
             <style jsx global>{`

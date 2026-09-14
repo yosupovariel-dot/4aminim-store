@@ -9,6 +9,7 @@ import { formatILS, calcDeposit } from "@/lib/pricing";
 import { NEIGHBORHOODS } from "@/lib/validation";
 import { useCart } from "@/lib/cart-context";
 import { DonationBanner } from "@/components/DonationBanner";
+import { CopyButton } from "@/components/CopyButton";
 
 export const initialOrderState: OrderActionState = {};
 
@@ -220,37 +221,28 @@ export function CheckoutWizard({ state, formAction, pending, hiddurPricing }: Pr
           <>
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 text-sm leading-relaxed">
               <p>
-                יש להעביר את סכום המקדמה — <strong>{formatILS(depositAmount / 100)}</strong> —
-                באפליקציית <strong>Bit</strong> או <strong>PayBox</strong> למספר{" "}
-                <strong dir="ltr">054-953-3757</strong>. לאחר ביצוע ההעברה, יש לסמן זאת למטה.
+                יש לפתוח את אפליקציית <strong>Bit</strong> או <strong>PayBox</strong> ולהעביר
+                למספר <strong dir="ltr">054-953-3757</strong> את סכום המקדמה —{" "}
+                <strong>{formatILS(depositAmount / 100)}</strong>. לאחר ביצוע ההעברה, יש לסמן
+                זאת למטה.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <a
-                  href={`bit://pay?phone=0549533757&sum=${Math.round(depositAmount / 100)}`}
-                  className="rounded-full bg-[#0FB5B0] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-                >
-                  פתיחה באפליקציית Bit
-                </a>
-                <a
-                  href={`paybox://pay?phone=0549533757&sum=${Math.round(depositAmount / 100)}`}
-                  className="rounded-full bg-[#5B3EE8] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-                >
-                  פתיחה באפליקציית PayBox
-                </a>
+                <CopyButton value="0549533757" label="העתקת מספר הטלפון" />
+                <CopyButton value={String(Math.round(depositAmount / 100))} label="העתקת סכום המקדמה" />
               </div>
-              <p className="mt-2 text-xs text-amber-700">
-                הקישורים פותחים את האפליקציה במכשירים שבהם היא מותקנת. אם הקישור
-                לא נפתח, ניתן להעביר ידנית למספר שלמעלה.
-              </p>
               <p className="mt-2">
                 <strong>מומלץ להעביר את המקדמה בהקדם על מנת לשריין את הסט עבורכם.</strong>
+              </p>
+              <p className="mt-2 font-semibold text-red-700">
+                שימו לב: אם המקדמה לא תתקבל בפועל, ההזמנה תבוטל אוטומטית.
               </p>
             </div>
 
             <label className="flex items-start gap-2 cursor-pointer">
               <input type="checkbox" name="depositMarkedPaid" required className="mt-1 h-4 w-4 accent-emerald-600" />
               <span className="text-sm text-emerald-900">
-                אני מאשר/ת שהעברתי את סכום המקדמה בביט כאמור לעיל.
+                אני מאשר/ת שהעברתי את סכום המקדמה בביט כאמור לעיל, ומבין/ה שאם
+                ההעברה לא תתקבל בפועל ההזמנה תבוטל.
               </span>
             </label>
           </>

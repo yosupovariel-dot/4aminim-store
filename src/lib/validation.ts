@@ -50,6 +50,9 @@ export const DonationFormSchema = z.object({
     .string()
     .trim()
     .regex(/^0\d{8,9}$/, { error: "מספר טלפון לא תקין (לדוגמה: 0501234567)" }),
+  paidConfirmed: z.literal(true, {
+    error: "יש לאשר שההעברה בוצעה בפועל",
+  }),
 });
 
 export type DonationFormValues = z.infer<typeof DonationFormSchema>;
