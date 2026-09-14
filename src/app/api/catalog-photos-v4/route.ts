@@ -13,7 +13,13 @@ import { prisma } from "@/lib/prisma";
 // immediately after one use.
 const SECRET = "c6e9b3f0a7d4182e6c9b3f7a0d5e8c2b6f9a3d7e1c4b8f2a6d0e3c7b1f5a9d3e";
 
-const UA = { "User-Agent": "4aminim-store-catalog-import/1.0 (one-off product photo import)" };
+const UA = {
+  "User-Agent": "4aminim-store/1.0 (https://4aminim-store.vercel.app; one-off product photo import)",
+};
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 const NEW_PRIMARIES: Record<string, string> = {
   "regular-mehadrin": "https://upload.wikimedia.org/wikipedia/commons/3/3d/Naxos_citron.jpg",
@@ -66,7 +72,10 @@ export async function GET(req: NextRequest) {
 
   const log: string[] = [];
 
+  let first = true;
   for (const [slug, sourceUrl] of Object.entries(NEW_PRIMARIES)) {
+    if (!first) await sleep(4000);
+    first = false;
     try {
       const uploaded = await uploadFromUrl(`sets/variety-refs/${slug}-${Date.now()}.jpg`, sourceUrl);
       log.push(await replacePrimary(slug, uploaded));
@@ -75,6 +84,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  await sleep(4000);
   try {
     const kidsUrl = await uploadFromUrl(`sets/variety-refs/kids-2nd-${Date.now()}.jpg`, KIDS_SECOND_IMAGE);
     const kids = await prisma.productSet.findUnique({ where: { slug: "kids-set" } });
