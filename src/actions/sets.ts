@@ -134,6 +134,14 @@ const EXT_BY_TYPE: Record<string, string> = {
 export async function uploadSetImage(setId: string, formData: FormData) {
   await verifyAdminSession();
 
+  // Only SPECIAL sets are one-of-a-kind physical items whose exact photo is
+  // what's purchased. Regular/kids/addon sets are a random pick from stock,
+  // so a per-set photo would be misleading.
+  const set = await prisma.productSet.findUnique({ where: { id: setId } });
+  if (set?.kind !== "SPECIAL") {
+    throw new Error("ניתן להעלות תמונות רק לסטים מיוחדים");
+  }
+
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     throw new Error("לא נבחר קובץ תמונה");

@@ -74,9 +74,6 @@ export default async function HomePage() {
               />
             </div>
           </div>
-          <p className="mt-3 text-xs font-medium text-emerald-600">
-            מהמלאי שלנו — בדיקת הידור לפני אריזה
-          </p>
         </div>
       </section>
 
@@ -84,7 +81,7 @@ export default async function HomePage() {
       <section id="sets" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:py-14">
         <div className="mb-6 text-center sm:mb-8">
           <h2 className="text-2xl font-bold text-emerald-950 sm:text-3xl">
-            הסטים הרגילים שלנו
+            הסטים שלנו
           </h2>
           <p className="mt-2 text-emerald-700">
             בחרו סוג אתרוג ואת רמת ההידור המתאימה לכם — בכמות בלתי מוגבלת.

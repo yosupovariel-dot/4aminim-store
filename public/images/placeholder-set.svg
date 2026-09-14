@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="תמונה זמנית של סט ארבעת המינים">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="איור של סט ארבעת המינים">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#eaf5ec"/>
@@ -23,5 +23,5 @@
     <ellipse cx="0" cy="90" rx="34" ry="44" fill="none" stroke="#e0b93f" stroke-width="2"/>
     <path d="M0,46 C 4,38 10,36 14,40" fill="none" stroke="#8a6d1f" stroke-width="3" stroke-linecap="round"/>
   </g>
-  <text x="240" y="330" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#3f6b45">תמונה זמנית — יוחלף בתמונה אמיתית</text>
+  <text x="240" y="330" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#3f6b45">כל סט מגיע עם אתרוג שנבחר עבורכם</text>
 </svg>

@@ -185,7 +185,10 @@ function SetEditorCard({ set }: { set: SetWithImages }) {
         )}
       </div>
 
-      {/* Images */}
+      {/* Images — only special sets are one-of-a-kind physical items whose
+          exact photo is what's purchased. Regular/kids/addon sets are a
+          random pick from stock, so a per-set photo would be misleading. */}
+      {set.kind === "SPECIAL" && (
       <div className="mb-4">
         <div className="mb-2 text-xs font-semibold text-emerald-700">תמונות</div>
         <div className="flex flex-wrap gap-3">
@@ -239,6 +242,7 @@ function SetEditorCard({ set }: { set: SetWithImages }) {
           </form>
         </div>
       </div>
+      )}
 
       {/* Fields */}
       <form action={updateAction} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

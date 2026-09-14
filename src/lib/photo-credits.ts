@@ -32,4 +32,10 @@ export const PHOTO_CREDITS: PhotoCredit[] = [
   { subject: "ערבות", photographer: "DRosenbach", license: "CC BY-SA 3.0", sourceUrl: "https://commons.wikimedia.org/wiki/File:Aravos.JPG" },
   { subject: "ערבות", license: "CC BY-SA 4.0", sourceUrl: "https://commons.wikimedia.org/wiki/File:ערבות.jpg" },
   { subject: "לולבים", photographer: "Daniel Ventura", license: "CC BY-SA 2.5", sourceUrl: "https://commons.wikimedia.org/wiki/File:Lulavim.jpg" },
+  { subject: "סט ארבעת המינים", license: "CC BY-SA 4.0", sourceUrl: "https://commons.wikimedia.org/wiki/File:Arbaat_haminim-new.jpg" },
+  { subject: "סט ארבעת המינים", photographer: "יאיר דב", license: "CC BY-SA 4.0", sourceUrl: "https://commons.wikimedia.org/wiki/File:סט_ארבעת_המינים.jpg" },
+  { subject: "כל ארבעת המינים", license: "CC BY-SA 4.0", sourceUrl: "https://commons.wikimedia.org/wiki/File:כל_ארבעת_המינים.jpg" },
+  { subject: "ארבעת המינים", license: "נחלת הכלל (Public Domain)", sourceUrl: "https://commons.wikimedia.org/wiki/File:Arbaat_haminim-2.jpg" },
+  { subject: "ארבעת המינים", photographer: "Yonidebest", license: "נחלת הכלל (Public Domain)", sourceUrl: "https://commons.wikimedia.org/wiki/File:Arbaat_haminim.jpg" },
+  { subject: "אתרוג, לולב והדס", license: "CC BY-SA 3.0", sourceUrl: "https://commons.wikimedia.org/wiki/File:Etrog_Lulav_and_Hadas.jpg" },
 ];
