@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { SetCard } from "@/components/SetCard";
 import { RegularSetsBrowser } from "@/components/RegularSetsBrowser";
@@ -53,6 +54,20 @@ export default async function HomePage() {
             >
               פרטי משלוח
             </Link>
+          </div>
+
+          <div className="relative mx-auto mt-10 aspect-[16/10] w-full max-w-3xl overflow-hidden rounded-3xl shadow-lg sm:mt-14">
+            <Image
+              src="/images/hero-etrogim.jpg"
+              alt="מבחר אתרוגים אמיתיים מהמלאי שלנו, ברמות הידור שונות"
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
+            />
+            <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+              מהמלאי שלנו — בדיקת הידור לפני אריזה
+            </span>
           </div>
         </div>
       </section>
