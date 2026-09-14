@@ -57,19 +57,19 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="relative mx-auto mt-10 h-48 w-48 sm:mt-14 sm:h-60 sm:w-60">
+          <div className="relative mx-auto mt-10 h-72 w-72 sm:mt-14 sm:h-96 sm:w-96">
             <div
-              className="absolute inset-0 animate-spin rounded-[2.25rem] bg-[conic-gradient(from_0deg,#059669,#fde047,#f59e0b,#059669,#6ee7b7,#059669)]"
-              style={{ animationDuration: "6s" }}
+              className="absolute inset-0 animate-spin rounded-[2.5rem] bg-[conic-gradient(from_0deg,#a7f3d0,#fef9c3,#a7f3d0,#d9f99d,#a7f3d0)]"
+              style={{ animationDuration: "14s" }}
               aria-hidden
             />
-            <div className="absolute inset-[5px] overflow-hidden rounded-[1.85rem] bg-emerald-50 shadow-lg">
+            <div className="absolute inset-[3px] overflow-hidden rounded-[2.35rem] bg-emerald-50 shadow-lg">
               <Image
                 src="/images/hero-etrogim.jpg"
                 alt="מבחר אתרוגים אמיתיים מהמלאי שלנו, ברמות הידור שונות"
                 fill
                 priority
-                sizes="240px"
+                sizes="(max-width: 640px) 288px, 384px"
                 className="object-contain p-1.5"
               />
             </div>

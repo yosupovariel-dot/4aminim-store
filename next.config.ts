@@ -15,16 +15,10 @@ const nextConfig: NextConfig = {
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Admin-uploaded set photos are stored in Vercel Blob (public store).
-    // upload.wikimedia.org serves a handful of openly-licensed reference
-    // photos used in the homepage species gallery (see /photo-credits).
     remotePatterns: [
       {
         protocol: "https",
         hostname: "*.public.blob.vercel-storage.com",
-      },
-      {
-        protocol: "https",
-        hostname: "upload.wikimedia.org",
       },
     ],
   },
