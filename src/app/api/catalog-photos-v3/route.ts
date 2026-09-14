@@ -19,7 +19,11 @@ const EXTERNAL_SOURCES = {
 };
 
 async function uploadFromUrl(pathname: string, sourceUrl: string) {
-  const res = await fetch(sourceUrl);
+  // Wikimedia's upload servers reject requests without a descriptive
+  // User-Agent (returns 403) per their bot/reuse policy.
+  const res = await fetch(sourceUrl, {
+    headers: { "User-Agent": "4aminim-store-catalog-import/1.0 (one-off product photo import)" },
+  });
   if (!res.ok) throw new Error(`fetch failed for ${sourceUrl}: ${res.status}`);
   const buffer = Buffer.from(await res.arrayBuffer());
   const contentType = res.headers.get("content-type") || "image/jpeg";
@@ -59,31 +63,39 @@ export async function GET(req: NextRequest) {
 
   const log: string[] = [];
 
-  const baladyUrl = await uploadFromUrl(
-    `sets/variety-refs/balady-${Date.now()}.jpg`,
-    EXTERNAL_SOURCES.balady
-  );
-  const moroccanUrl = await uploadFromUrl(
-    `sets/variety-refs/moroccan-extra-${Date.now()}.jpg`,
-    EXTERNAL_SOURCES.moroccan
-  );
-  const pitomUrl = await uploadFromUrl(
-    `sets/variety-refs/pitom-${Date.now()}.jpg`,
-    EXTERNAL_SOURCES.pitom
-  );
-  log.push(`uploaded 3 external images: ${baladyUrl}, ${moroccanUrl}, ${pitomUrl}`);
+  try {
+    const baladyUrl = await uploadFromUrl(
+      `sets/variety-refs/balady-${Date.now()}.jpg`,
+      EXTERNAL_SOURCES.balady
+    );
+    const moroccanUrl = await uploadFromUrl(
+      `sets/variety-refs/moroccan-extra-${Date.now()}.jpg`,
+      EXTERNAL_SOURCES.moroccan
+    );
+    const pitomUrl = await uploadFromUrl(
+      `sets/variety-refs/pitom-${Date.now()}.jpg`,
+      EXTERNAL_SOURCES.pitom
+    );
+    log.push(`uploaded 3 external images: ${baladyUrl}, ${moroccanUrl}, ${pitomUrl}`);
 
-  // Give roughly half of each variety's products the shared lulav-box photo
-  // kept as-is (untouched below), and the other half a distinct new photo —
-  // so the same secondary image no longer repeats across all 12 products.
-  log.push(await setSecondary("regular-mehadrin", baladyUrl));
-  log.push(await setSecondary("regular-diamond", baladyUrl));
+    // Give roughly half of each variety's products the shared lulav-box
+    // photo kept as-is (untouched below), and the other half a distinct new
+    // photo — so the same secondary image no longer repeats across all 12
+    // products.
+    log.push(await setSecondary("regular-mehadrin", baladyUrl));
+    log.push(await setSecondary("regular-diamond", baladyUrl));
 
-  log.push(await setSecondary("temani-mehadrin", pitomUrl));
-  log.push(await setSecondary("temani-diamond", pitomUrl));
+    log.push(await setSecondary("temani-mehadrin", pitomUrl));
+    log.push(await setSecondary("temani-diamond", pitomUrl));
 
-  log.push(await setSecondary("moroccan-mehadrin", moroccanUrl));
-  log.push(await setSecondary("moroccan-diamond", moroccanUrl));
+    log.push(await setSecondary("moroccan-mehadrin", moroccanUrl));
+    log.push(await setSecondary("moroccan-diamond", moroccanUrl));
 
-  return NextResponse.json({ ok: true, log });
+    return NextResponse.json({ ok: true, log });
+  } catch (err) {
+    return NextResponse.json(
+      { ok: false, log, error: err instanceof Error ? err.message : String(err) },
+      { status: 500 }
+    );
+  }
 }
