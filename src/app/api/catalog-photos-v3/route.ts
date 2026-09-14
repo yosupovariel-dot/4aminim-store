@@ -15,7 +15,7 @@ const EXTERNAL_SOURCES = {
     "https://upload.wikimedia.org/wikipedia/commons/3/35/Balady_citron_%28Braverman_cultivar%29.jpg",
   moroccan:
     "https://upload.wikimedia.org/wikipedia/commons/a/a9/MoroccanEtrog.jpg",
-  pitom: "https://upload.wikimedia.org/wikipedia/commons/4/49/Etrog_with_Pitom.jpg",
+  pitom: "https://upload.wikimedia.org/wikipedia/commons/0/0b/3_etrog.JPG",
 };
 
 async function uploadFromUrl(pathname: string, sourceUrl: string) {
