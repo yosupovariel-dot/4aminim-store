@@ -119,15 +119,19 @@ const ADDON_SETS = [
       "ערבות מתייבשות תוך מספר ימים — כדאי להחזיק זוג ערבות רזרביות כדי להחליף באמצע החג ולהמשיך לקיים את המצווה בהידור.",
     price: 700,
     sortOrder: 1,
+    customerVisible: true,
   },
   {
     slug: "spare-hadassim",
     name: "הדסים ספייר (להחלפה)",
     etrogType: "תוספת",
     description:
-      "הדסים מתייבשים תוך מספר ימים — כדאי להחזיק שלישיית הדסים רזרבית כדי להחליף באמצע החג ולהמשיך לקיים את המצווה בהידור.",
-    price: 700,
+      "הדסים מתייבשים תוך מספר ימים — תוספת שהמנהל מוסיף להזמנה לפי הצורך, לא מוצגת ללקוח בעמוד הסל.",
+    price: 3500,
     sortOrder: 2,
+    // Admin-only: added to a specific order after the fact, never shown to
+    // the customer at checkout.
+    customerVisible: false,
   },
 ];
 

@@ -13,6 +13,8 @@ import {
   unmarkDelivered,
   markDepositExempt,
   unmarkDepositExempt,
+  addOrderExtra,
+  removeOrderExtra,
   updateOrderDetails,
   deleteOrder,
 } from "@/actions/orders";
@@ -24,11 +26,19 @@ export default async function AdminOrderDetailPage({
   const order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
   if (!order) notFound();
 
-  const otherOrders = await prisma.order.findMany({
-    where: { phone: order.phone, id: { not: order.id } },
-    orderBy: { createdAt: "desc" },
-    include: { items: true },
-  });
+  const [otherOrders, addonSets, orderItemSets] = await Promise.all([
+    prisma.order.findMany({
+      where: { phone: order.phone, id: { not: order.id } },
+      orderBy: { createdAt: "desc" },
+      include: { items: true },
+    }),
+    prisma.productSet.findMany({ where: { kind: "ADDON", active: true }, orderBy: { sortOrder: "asc" } }),
+    prisma.productSet.findMany({
+      where: { id: { in: order.items.map((i) => i.setId) } },
+      select: { id: true, kind: true },
+    }),
+  ]);
+  const setKindById = new Map(orderItemSets.map((s) => [s.id, s.kind]));
 
   const confirmDepositAction = confirmDeposit.bind(null, order.id);
   const unconfirmDepositAction = unconfirmDeposit.bind(null, order.id);
@@ -37,6 +47,7 @@ export default async function AdminOrderDetailPage({
   const unmarkDeliveredAction = unmarkDelivered.bind(null, order.id);
   const markDepositExemptAction = markDepositExempt.bind(null, order.id);
   const unmarkDepositExemptAction = unmarkDepositExempt.bind(null, order.id);
+  const addOrderExtraAction = addOrderExtra.bind(null, order.id);
   const updateDetailsAction = updateOrderDetails.bind(null, order.id);
   const deleteOrderAction = deleteOrder.bind(null, order.id);
 
@@ -140,12 +151,43 @@ export default async function AdminOrderDetailPage({
                 <span className="text-emerald-900">
                   {i.setNameSnapshot} ({i.etrogTypeSnapshot}) × {i.quantity}
                 </span>
-                <span className="font-medium text-emerald-950">
-                  {formatILS((i.unitPrice * i.quantity) / 100)}
+                <span className="flex items-center gap-2">
+                  <span className="font-medium text-emerald-950">
+                    {formatILS((i.unitPrice * i.quantity) / 100)}
+                  </span>
+                  {setKindById.get(i.setId) === "ADDON" && (
+                    <form action={removeOrderExtra.bind(null, order.id, i.id)}>
+                      <button
+                        className="text-xs text-red-500 underline hover:text-red-700"
+                        title="הסרת התוספת מההזמנה"
+                      >
+                        הסרה
+                      </button>
+                    </form>
+                  )}
                 </span>
               </div>
             ))}
           </div>
+
+          {addonSets.length > 0 && (
+            <form action={addOrderExtraAction} className="flex flex-wrap items-center gap-2 pt-1">
+              <select
+                name="setId"
+                className="rounded-lg border border-emerald-200 px-2 py-1.5 text-sm"
+              >
+                {addonSets.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} — {formatILS(a.price / 100)}
+                  </option>
+                ))}
+              </select>
+              <button className="rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-200">
+                הוספת תוספת להזמנה
+              </button>
+            </form>
+          )}
+
           <Row label="מחיר כולל" value={formatILS(order.totalPrice / 100)} />
           {order.payFullInCash ? (
             <Row label="אופן תשלום" value="הכל במזומן במסירה" />

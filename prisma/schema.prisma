@@ -83,6 +83,9 @@ model ProductSet {
   stockTotal  Int?
   stockSold   Int      @default(0)
   active      Boolean  @default(true)
+  // ADDON-kind only: whether it's offered to customers in the cart, or
+  // only addable by the admin to an existing order (behind the scenes).
+  customerVisible Boolean @default(true)
   sortOrder   Int      @default(0)
   images      SetMedia[]
   orderItems  OrderItem[]

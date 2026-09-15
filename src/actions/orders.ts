@@ -199,6 +199,80 @@ export async function unmarkDepositExempt(orderId: string) {
   await resyncOrdersSheet();
 }
 
+// Lets the admin attach an ADDON (e.g. an admin-only extra like spare
+// hadassim) to an already-placed order — the customer never sees or
+// chooses this; it just raises the total (and so the balance due at
+// delivery, since the deposit already collected isn't recalculated).
+export async function addOrderExtra(orderId: string, formData: FormData) {
+  await verifyAdminSession();
+
+  const setId = String(formData.get("setId") || "");
+  if (!setId) return;
+
+  const set = await prisma.productSet.findUnique({ where: { id: setId } });
+  if (!set || set.kind !== "ADDON") return;
+
+  await prisma.$transaction(async (tx) => {
+    const existingItem = await tx.orderItem.findFirst({ where: { orderId, setId } });
+    if (existingItem) {
+      await tx.orderItem.update({
+        where: { id: existingItem.id },
+        data: { quantity: { increment: 1 } },
+      });
+    } else {
+      await tx.orderItem.create({
+        data: {
+          orderId,
+          setId: set.id,
+          setNameSnapshot: set.name,
+          etrogTypeSnapshot: set.etrogType,
+          unitPrice: set.price,
+          quantity: 1,
+        },
+      });
+    }
+    await tx.order.update({
+      where: { id: orderId },
+      data: { totalPrice: { increment: set.price } },
+    });
+  });
+
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  await resyncOrdersSheet();
+}
+
+// Undoes addOrderExtra — only for ADDON line items (regular/special items
+// carry stock and deposit implications this doesn't account for).
+export async function removeOrderExtra(orderId: string, orderItemId: string) {
+  await verifyAdminSession();
+
+  const item = await prisma.orderItem.findUnique({ where: { id: orderItemId } });
+  if (!item || item.orderId !== orderId) return;
+
+  const set = await prisma.productSet.findUnique({ where: { id: item.setId } });
+  if (set?.kind !== "ADDON") return;
+
+  await prisma.$transaction(async (tx) => {
+    if (item.quantity > 1) {
+      await tx.orderItem.update({
+        where: { id: item.id },
+        data: { quantity: { decrement: 1 } },
+      });
+    } else {
+      await tx.orderItem.delete({ where: { id: item.id } });
+    }
+    await tx.order.update({
+      where: { id: orderId },
+      data: { totalPrice: { decrement: item.unitPrice } },
+    });
+  });
+
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  await resyncOrdersSheet();
+}
+
 export async function saveAdminNotes(orderId: string, formData: FormData) {
   await verifyAdminSession();
   const notes = String(formData.get("notes") || "");

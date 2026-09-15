@@ -126,7 +126,9 @@ export default async function AdminSetsPage() {
       <section>
         <h2 className="mb-3 text-lg font-bold text-emerald-950">תוספות (Add-ons)</h2>
         <p className="mb-3 text-sm text-emerald-600">
-          פריטים אופציונליים המוצעים בסל הקניות, כמו ערבות ספייר להחלפה.
+          פריטים אופציונליים שמתווספים לסכום שהלקוח משלם — כמו ערבות ספייר
+          שהלקוח בוחר להוסיף בעצמו בסל, או תוספת שרק המנהל מוסיף להזמנה
+          מאחורי הקלעים (לא מוצגת ללקוח בכלל).
         </p>
         <div className="grid gap-4">
           {addonSets.map((set) => (
@@ -140,8 +142,7 @@ export default async function AdminSetsPage() {
         <div className="mt-6 rounded-2xl border border-dashed border-emerald-300 bg-emerald-50/50 p-5">
           <h3 className="mb-1 font-bold text-emerald-900">הוספת תוספת חדשה</h3>
           <p className="mb-3 text-xs text-emerald-600">
-            למשל &quot;הדסים ספייר (להחלפה)&quot; — תוספת תופיע בסל הקניות
-            לכל לקוח, ותתווסף לסכום הכולל שהוא צריך לשלם.
+            למשל &quot;הדסים ספייר (להחלפה)&quot;.
           </p>
           <form action={createAddon} className="grid gap-3 sm:grid-cols-2">
             <label className="text-sm sm:col-span-2">
@@ -172,6 +173,16 @@ export default async function AdminSetsPage() {
                 required
                 className="w-full rounded-lg border border-emerald-200 px-3 py-1.5"
               />
+            </label>
+            <label className="flex items-center gap-2 self-end text-sm text-emerald-700">
+              <input
+                type="checkbox"
+                name="customerVisible"
+                defaultChecked
+                className="h-4 w-4 accent-emerald-600"
+              />
+              להציג ללקוח בעמוד הסל (אם לא מסומן — רק המנהל יכול להוסיף
+              להזמנה)
             </label>
             <div className="flex items-end sm:col-span-2">
               <button className="rounded-full bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
@@ -214,6 +225,16 @@ function SetEditorCard({ set }: { set: SetWithImages }) {
             }`}
           >
             {set.stockSold > 0 ? "נמכר — מוסתר באתר" : "זמין באתר"}
+          </span>
+        ) : set.kind === "ADDON" ? (
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+              set.customerVisible
+                ? "bg-emerald-100 text-emerald-800"
+                : "bg-amber-100 text-amber-800"
+            }`}
+          >
+            {set.customerVisible ? "מוצג ללקוח בסל" : "מאחורי הקלעים בלבד"}
           </span>
         ) : (
           set.stockTotal != null && (
@@ -374,6 +395,17 @@ function SetEditorCard({ set }: { set: SetWithImages }) {
             <input type="checkbox" name="active" defaultChecked={set.active} className="h-4 w-4 accent-emerald-600" />
             פעיל
           </label>
+          {set.kind === "ADDON" && (
+            <label className="flex items-center gap-2 text-sm text-emerald-700">
+              <input
+                type="checkbox"
+                name="customerVisible"
+                defaultChecked={set.customerVisible}
+                className="h-4 w-4 accent-emerald-600"
+              />
+              מוצג ללקוח בסל
+            </label>
+          )}
           <button className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
             שמירה
           </button>

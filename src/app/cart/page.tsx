@@ -3,7 +3,7 @@ import { CartPageClient } from "@/components/CartPageClient";
 
 export default async function CartPage() {
   const addons = await prisma.productSet.findMany({
-    where: { kind: "ADDON", active: true },
+    where: { kind: "ADDON", active: true, customerVisible: true },
     orderBy: { sortOrder: "asc" },
   });
 

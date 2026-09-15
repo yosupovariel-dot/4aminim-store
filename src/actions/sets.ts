@@ -24,6 +24,7 @@ export async function updateSet(setId: string, formData: FormData) {
   const priceShekels = Number(formData.get("price"));
   const stockTotalRaw = formData.get("stockTotal");
   const active = formData.get("active") === "on";
+  const customerVisible = formData.get("customerVisible") === "on";
   const hiddurLevelRaw = String(formData.get("hiddurLevel") || "");
   const hiddurLevel = HIDDUR_VALUES.includes(hiddurLevelRaw as HiddurLevel)
     ? (hiddurLevelRaw as HiddurLevel)
@@ -37,6 +38,11 @@ export async function updateSet(setId: string, formData: FormData) {
   if (!name || !etrogType || !description) return;
   if (!Number.isFinite(priceShekels) || priceShekels <= 0) return;
 
+  // customerVisible is only ever rendered as a form field for ADDON sets —
+  // for every other kind the checkbox doesn't exist, so its absence must
+  // not be read as "uncheck it". Only touch the field when this is an addon.
+  const existing = await prisma.productSet.findUnique({ where: { id: setId } });
+
   await prisma.productSet.update({
     where: { id: setId },
     data: {
@@ -47,6 +53,7 @@ export async function updateSet(setId: string, formData: FormData) {
       price: Math.round(priceShekels * 100),
       stockTotal,
       active,
+      ...(existing?.kind === "ADDON" ? { customerVisible } : {}),
     },
   });
 
@@ -128,6 +135,7 @@ export async function createAddon(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const description = String(formData.get("description") || "").trim();
   const priceShekels = Number(formData.get("price"));
+  const customerVisible = formData.get("customerVisible") === "on";
 
   if (!name || !description) return;
   if (!Number.isFinite(priceShekels) || priceShekels <= 0) return;
@@ -147,6 +155,7 @@ export async function createAddon(formData: FormData) {
       price: Math.round(priceShekels * 100),
       sortOrder: (maxSort._max.sortOrder ?? 0) + 1,
       active: true,
+      customerVisible,
     },
   });
 
