@@ -168,9 +168,10 @@ export default async function AdminSetsPage() {
               <input
                 type="number"
                 name="price"
-                min={1}
+                min={0}
                 step="1"
                 required
+                placeholder="0 = תוספת בחינם"
                 className="w-full rounded-lg border border-emerald-200 px-3 py-1.5"
               />
             </label>
@@ -355,7 +356,7 @@ function SetEditorCard({ set }: { set: SetWithImages }) {
           <input
             type="number"
             name="price"
-            min={1}
+            min={set.kind === "ADDON" ? 0 : 1}
             step="1"
             defaultValue={set.price / 100}
             className="w-full rounded-lg border border-emerald-200 px-2 py-1.5"

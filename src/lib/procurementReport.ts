@@ -36,14 +36,16 @@ export async function buildProcurementReport() {
 
   const regularTotal = regularSets.reduce((sum, s) => sum + soldQty(s), 0) + donations.length;
   const specialTotal = specialSets.reduce((sum, s) => sum + soldQty(s), 0);
-  // All current add-ons are spare-aravot replacements, so their quantity
-  // folds into the arava total (not lulav/case) — see checkout add-on copy.
-  const addonTotal = addonSets.reduce((sum, s) => sum + soldQty(s), 0);
+  // Only the spare-aravot add-on actually consumes an extra arava — other
+  // add-ons (e.g. an admin-only bonus gift) are unrelated physical items,
+  // so they must not be folded into the arava count.
+  const spareAravot = addonSets.find((s) => s.slug === "spare-aravot");
+  const spareAravotQty = spareAravot ? soldQty(spareAravot) : 0;
 
   const universal = {
     lulav: regularTotal + specialTotal,
     caseCount: regularTotal + specialTotal,
-    arava: regularTotal + specialTotal + addonTotal,
+    arava: regularTotal + specialTotal + spareAravotQty,
   };
 
   const qtyForLevel = (level: "KOSHER" | "MEHADRIN" | "MEHADRIN_MIN_HAMEHADRIN" | "DIAMOND") =>
@@ -86,6 +88,7 @@ export async function buildProcurementReport() {
     regularTotal,
     specialTotal,
     donationTotal: donations.length,
+    spareAravotQty,
   };
 }
 

@@ -36,12 +36,16 @@ export async function updateSet(setId: string, formData: FormData) {
       : Math.max(0, Math.trunc(Number(stockTotalRaw)));
 
   if (!name || !etrogType || !description) return;
-  if (!Number.isFinite(priceShekels) || priceShekels <= 0) return;
 
   // customerVisible is only ever rendered as a form field for ADDON sets —
   // for every other kind the checkbox doesn't exist, so its absence must
   // not be read as "uncheck it". Only touch the field when this is an addon.
   const existing = await prisma.productSet.findUnique({ where: { id: setId } });
+
+  // Addons may be free (e.g. an admin-only bonus gift) — every other kind
+  // must still have a positive price.
+  const minPrice = existing?.kind === "ADDON" ? 0 : 0.01;
+  if (!Number.isFinite(priceShekels) || priceShekels < minPrice) return;
 
   await prisma.productSet.update({
     where: { id: setId },
@@ -138,7 +142,9 @@ export async function createAddon(formData: FormData) {
   const customerVisible = formData.get("customerVisible") === "on";
 
   if (!name || !description) return;
-  if (!Number.isFinite(priceShekels) || priceShekels <= 0) return;
+  // Addons may be free (e.g. an admin-only bonus gift) — only reject
+  // negative or non-numeric input, not zero.
+  if (!Number.isFinite(priceShekels) || priceShekels < 0) return;
 
   const maxSort = await prisma.productSet.aggregate({
     where: { kind: "ADDON" },

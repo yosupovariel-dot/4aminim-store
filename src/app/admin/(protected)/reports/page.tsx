@@ -37,11 +37,7 @@ export default async function AdminReportsPage() {
           <StatBox
             label="ערבות (כולל ספייר)"
             value={report.universal.arava}
-            hint={
-              report.addons.length > 0
-                ? `מתוכן ${report.addons.reduce((s, a) => s + a.quantity, 0)} יח' ספייר`
-                : undefined
-            }
+            hint={report.spareAravotQty > 0 ? `מתוכן ${report.spareAravotQty} יח' ספייר` : undefined}
           />
           <StatBox label="נרתיקים" value={report.universal.caseCount} />
         </div>
@@ -114,6 +110,21 @@ export default async function AdminReportsPage() {
           </div>
         )}
       </section>
+
+      {report.addons.length > 0 && (
+        <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
+          <h2 className="mb-1 font-bold text-emerald-950">תוספות</h2>
+          <p className="mb-4 text-xs text-emerald-500">
+            כולל תוספות שהלקוח מוסיף בעצמו בסל, וגם תוספות שרק המנהל מוסיף
+            להזמנות מאחורי הקלעים.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {report.addons.map((row) => (
+              <StatBox key={row.name} label={row.name} value={row.quantity} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

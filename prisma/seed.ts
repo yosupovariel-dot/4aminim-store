@@ -133,6 +133,16 @@ const ADDON_SETS = [
     // the customer at checkout.
     customerVisible: false,
   },
+  {
+    slug: "koyshelach",
+    name: "קויישלך",
+    etrogType: "תוספת",
+    description:
+      "מתנה חינמית שהמנהל מוסיף לפי שיקול דעתו להזמנות נבחרות — לא מוצגת ללקוח ולא ניתנת להוספה עצמית.",
+    price: 0,
+    sortOrder: 3,
+    customerVisible: false,
+  },
 ];
 
 // A cheap, clearly-labeled set for children to hold and play with — NOT
