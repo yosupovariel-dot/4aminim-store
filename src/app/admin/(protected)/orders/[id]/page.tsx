@@ -134,7 +134,7 @@ export default async function AdminOrderDetailPage({
             {order.items.map((i) => (
               <div key={i.id} className="flex items-center justify-between text-sm">
                 <span className="text-emerald-900">
-                  {i.setNameSnapshot} × {i.quantity}
+                  {i.setNameSnapshot} ({i.etrogTypeSnapshot}) × {i.quantity}
                 </span>
                 <span className="font-medium text-emerald-950">
                   {formatILS((i.unitPrice * i.quantity) / 100)}
@@ -234,7 +234,9 @@ export default async function AdminOrderDetailPage({
                 <ul className="space-y-0.5 text-emerald-950">
                   {o.items.map((item) => (
                     <li key={item.id} className="flex items-center justify-between gap-2">
-                      <span className="truncate">{item.setNameSnapshot}</span>
+                      <span className="truncate">
+                        {item.setNameSnapshot} ({item.etrogTypeSnapshot})
+                      </span>
                       <span className="shrink-0 font-medium text-emerald-700">× {item.quantity}</span>
                     </li>
                   ))}

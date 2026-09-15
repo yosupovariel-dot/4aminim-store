@@ -103,6 +103,7 @@ export default async function AdminOrdersPage({
                     {o.items.map((item) => (
                       <li key={item.id} className="whitespace-nowrap">
                         {item.setNameSnapshot}
+                        <span className="mr-1 text-emerald-600">({item.etrogTypeSnapshot})</span>
                         {item.quantity > 1 && (
                           <span className="mr-1 font-semibold text-emerald-700">× {item.quantity}</span>
                         )}

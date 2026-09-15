@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatILS } from "@/lib/pricing";
 
-type OrderItemSummary = { name: string; quantity: number };
+type OrderItemSummary = { name: string; etrogType: string; quantity: number };
 type CustomerOrder = {
   id: string;
   orderNumber: number;
@@ -50,7 +50,11 @@ export default async function AdminCustomersPage({
       orderNumber: order.orderNumber,
       delivered: order.delivered,
       status: order.status,
-      items: order.items.map((i) => ({ name: i.setNameSnapshot, quantity: i.quantity })),
+      items: order.items.map((i) => ({
+        name: i.setNameSnapshot,
+        etrogType: i.etrogTypeSnapshot,
+        quantity: i.quantity,
+      })),
     };
 
     const existing = customers.get(order.phone);
@@ -233,7 +237,9 @@ export default async function AdminCustomersPage({
                     <ul className="space-y-0.5 text-emerald-950">
                       {o.items.map((item, i) => (
                         <li key={i} className="flex items-center justify-between gap-2">
-                          <span className="truncate">{item.name}</span>
+                          <span className="truncate">
+                            {item.name} ({item.etrogType})
+                          </span>
                           <span className="shrink-0 font-medium text-emerald-700">× {item.quantity}</span>
                         </li>
                       ))}

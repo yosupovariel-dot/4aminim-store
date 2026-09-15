@@ -19,14 +19,18 @@ export default async function AdminDashboardPage() {
     (o) => o.depositMarkedPaid && !o.depositConfirmed
   ).length;
 
-  const bySet = new Map<string, { name: string; count: number }>();
+  const bySet = new Map<string, { name: string; etrogType: string; count: number }>();
   for (const o of activeOrders) {
     for (const item of o.items) {
       const existing = bySet.get(item.setId);
       if (existing) {
         existing.count += item.quantity;
       } else {
-        bySet.set(item.setId, { name: item.setNameSnapshot, count: item.quantity });
+        bySet.set(item.setId, {
+          name: item.setNameSnapshot,
+          etrogType: item.etrogTypeSnapshot,
+          count: item.quantity,
+        });
       }
     }
   }
@@ -55,8 +59,10 @@ export default async function AdminDashboardPage() {
             {Array.from(bySet.values())
               .sort((a, b) => b.count - a.count)
               .map((row) => (
-                <li key={row.name} className="flex items-center justify-between py-2">
-                  <span className="text-emerald-900">{row.name}</span>
+                <li key={row.name + row.etrogType} className="flex items-center justify-between py-2">
+                  <span className="text-emerald-900">
+                    {row.name} <span className="text-emerald-600">({row.etrogType})</span>
+                  </span>
                   <span className="font-bold text-emerald-950">{row.count} יח&apos;</span>
                 </li>
               ))}
