@@ -130,6 +130,11 @@ model Order {
   // instead. Distinct from payFullInCash, which the customer chose at
   // checkout.
   depositExempt     Boolean     @default(false)
+  // Admin-only: the full order amount was already received, before
+  // delivery — independent of depositConfirmed (which only tracks the 20%
+  // portion) and of delivered (which tracks handing over the goods).
+  fullyPaid         Boolean     @default(false)
+  fullyPaidAt       DateTime?
 
   termsAccepted     Boolean     @default(false)
   status            OrderStatus @default(PENDING)

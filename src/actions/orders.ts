@@ -207,6 +207,28 @@ export async function unmarkDepositExempt(orderId: string) {
   await resyncOrdersSheet();
 }
 
+export async function markFullyPaid(orderId: string) {
+  await verifyAdminSession();
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { fullyPaid: true, fullyPaidAt: new Date() },
+  });
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  await resyncOrdersSheet();
+}
+
+export async function unmarkFullyPaid(orderId: string) {
+  await verifyAdminSession();
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { fullyPaid: false, fullyPaidAt: null },
+  });
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  await resyncOrdersSheet();
+}
+
 // Lets the admin attach an ADDON (e.g. an admin-only extra like spare
 // hadassim) to an already-placed order — the customer never sees or
 // chooses this; it just raises the total (and so the balance due at

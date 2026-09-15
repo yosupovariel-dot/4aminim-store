@@ -113,10 +113,16 @@ export default async function AdminOrdersPage({
                 </td>
                 <td className="px-4 py-3">{formatILS(o.totalPrice / 100)}</td>
                 <td className="px-4 py-3">
-                  {o.payFullInCash || o.depositExempt ? "—" : formatILS(o.depositAmount / 100)}
+                  {o.fullyPaid || o.payFullInCash || o.depositExempt
+                    ? "—"
+                    : formatILS(o.depositAmount / 100)}
                 </td>
                 <td className="px-4 py-3">
-                  {o.payFullInCash ? (
+                  {o.fullyPaid ? (
+                    <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800">
+                      שולם במלואו
+                    </span>
+                  ) : o.payFullInCash ? (
                     <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
                       מזומן במסירה
                     </span>

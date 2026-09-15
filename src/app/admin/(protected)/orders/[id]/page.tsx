@@ -13,6 +13,8 @@ import {
   unmarkDelivered,
   markDepositExempt,
   unmarkDepositExempt,
+  markFullyPaid,
+  unmarkFullyPaid,
   addOrderExtra,
   removeOrderExtra,
   updateOrderDetails,
@@ -47,6 +49,8 @@ export default async function AdminOrderDetailPage({
   const unmarkDeliveredAction = unmarkDelivered.bind(null, order.id);
   const markDepositExemptAction = markDepositExempt.bind(null, order.id);
   const unmarkDepositExemptAction = unmarkDepositExempt.bind(null, order.id);
+  const markFullyPaidAction = markFullyPaid.bind(null, order.id);
+  const unmarkFullyPaidAction = unmarkFullyPaid.bind(null, order.id);
   const addOrderExtraAction = addOrderExtra.bind(null, order.id);
   const updateDetailsAction = updateOrderDetails.bind(null, order.id);
   const deleteOrderAction = deleteOrder.bind(null, order.id);
@@ -189,6 +193,7 @@ export default async function AdminOrderDetailPage({
           )}
 
           <Row label="מחיר כולל" value={formatILS(order.totalPrice / 100)} />
+          {order.fullyPaid && <Row label="סטטוס תשלום" value="שולם במלואו ✓" />}
           {order.payFullInCash ? (
             <Row label="אופן תשלום" value="הכל במזומן במסירה" />
           ) : order.depositExempt ? (
@@ -205,7 +210,9 @@ export default async function AdminOrderDetailPage({
           <Row
             label="יתרה לתשלום במסירה"
             value={formatILS(
-              (order.payFullInCash || order.depositExempt
+              (order.fullyPaid
+                ? 0
+                : order.payFullInCash || order.depositExempt
                 ? order.totalPrice
                 : order.totalPrice - order.depositAmount) / 100
             )}
@@ -214,6 +221,21 @@ export default async function AdminOrderDetailPage({
             label="תאריך אישור תקנון"
             value={new Date(order.createdAt).toLocaleString("he-IL")}
           />
+
+          <div className="pt-3">
+            <form action={order.fullyPaid ? unmarkFullyPaidAction : markFullyPaidAction}>
+              <button
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  order.fullyPaid
+                    ? "bg-emerald-100 text-emerald-800"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                }`}
+                title="לסימון ידני שהלקוח כבר שילם את הסכום המלא, לפני המסירה"
+              >
+                {order.fullyPaid ? "שולם במלואו ✓ (לחיצה לביטול)" : "סמן ששולם הכל מראש"}
+              </button>
+            </form>
+          </div>
 
           {!order.payFullInCash && (
             <div className="pt-3">
