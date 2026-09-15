@@ -9,7 +9,7 @@ function soldQty(set: { orderItems: { quantity: number }[] }) {
 }
 
 export async function buildProcurementReport() {
-  const [regularSets, specialSets, addonSets] = await Promise.all([
+  const [regularSets, specialSets, addonSets, donations] = await Promise.all([
     prisma.productSet.findMany({
       where: { kind: "REGULAR", active: true },
       orderBy: [{ etrogType: "asc" }, { sortOrder: "asc" }],
@@ -25,9 +25,16 @@ export async function buildProcurementReport() {
       orderBy: { sortOrder: "asc" },
       include: { orderItems: { where: NOT_CANCELLED } },
     }),
+    // Donated sets are always the רגיל variety, but still draw on the same
+    // physical stock (lulav/hadas/arava/etrog/case) as a regular order —
+    // so they need to be procured for too, same as any other order.
+    prisma.donation.findMany(),
   ]);
 
-  const regularTotal = regularSets.reduce((sum, s) => sum + soldQty(s), 0);
+  const donationQtyForLevel = (level: "KOSHER" | "MEHADRIN" | "MEHADRIN_MIN_HAMEHADRIN" | "DIAMOND") =>
+    donations.filter((d) => d.hiddurLevel === level).length;
+
+  const regularTotal = regularSets.reduce((sum, s) => sum + soldQty(s), 0) + donations.length;
   const specialTotal = specialSets.reduce((sum, s) => sum + soldQty(s), 0);
   // All current add-ons are spare-aravot replacements, so their quantity
   // folds into the arava total (not lulav/case) — see checkout add-on copy.
@@ -40,7 +47,8 @@ export async function buildProcurementReport() {
   };
 
   const qtyForLevel = (level: "KOSHER" | "MEHADRIN" | "MEHADRIN_MIN_HAMEHADRIN" | "DIAMOND") =>
-    regularSets.filter((s) => s.hiddurLevel === level).reduce((sum, s) => sum + soldQty(s), 0);
+    regularSets.filter((s) => s.hiddurLevel === level).reduce((sum, s) => sum + soldQty(s), 0) +
+    donationQtyForLevel(level);
 
   // Hadas quality only really differs at the KOSHER and MEHADRIN tiers —
   // MEHADRIN_MIN_HAMEHADRIN, DIAMOND, and every special set all use the same
@@ -58,7 +66,7 @@ export async function buildProcurementReport() {
     variety: s.etrogType,
     level: s.hiddurLevel,
     label: s.hiddurLevel ? HIDDUR_LABEL[s.hiddurLevel] : s.name,
-    quantity: soldQty(s),
+    quantity: soldQty(s) + (s.etrogType === "רגיל" && s.hiddurLevel ? donationQtyForLevel(s.hiddurLevel) : 0),
   }));
 
   const etrogimSpecial = specialSets.map((s) => ({
@@ -77,6 +85,7 @@ export async function buildProcurementReport() {
     addons,
     regularTotal,
     specialTotal,
+    donationTotal: donations.length,
   };
 }
 

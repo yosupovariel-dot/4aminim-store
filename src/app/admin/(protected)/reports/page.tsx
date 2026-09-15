@@ -9,7 +9,13 @@ export default async function AdminReportsPage() {
         <div>
           <h1 className="text-2xl font-extrabold text-emerald-950">דוח רכש וכמויות</h1>
           <p className="mt-1 text-sm text-emerald-600">
-            כמה מכל דבר צריך להכין, לפי הזמנות שאינן מבוטלות (כולל סטים מיוחדים ותוספות).
+            כמה מכל דבר צריך להכין, לפי הזמנות שאינן מבוטלות (כולל סטים מיוחדים,
+            תוספות ותרומות).
+            {report.donationTotal > 0 && (
+              <span className="mr-1 font-semibold text-emerald-800">
+                מתוכן {report.donationTotal} סטים לתרומה.
+              </span>
+            )}
           </p>
         </div>
         <a

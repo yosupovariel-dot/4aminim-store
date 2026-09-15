@@ -1,20 +1,25 @@
 import { prisma } from "@/lib/prisma";
 import { formatILS } from "@/lib/pricing";
 import { StatCard } from "@/components/StatCard";
+import { HIDDUR_LABEL } from "@/lib/catalog";
 
 export default async function AdminDashboardPage() {
-  const orders = await prisma.order.findMany({
-    include: { items: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const [orders, donations] = await Promise.all([
+    prisma.order.findMany({
+      include: { items: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.donation.findMany(),
+  ]);
 
   const activeOrders = orders.filter((o) => o.status !== "CANCELLED");
   const totalOrders = orders.length;
-  const totalSetsSold = activeOrders.reduce(
-    (sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0),
-    0
-  );
-  const totalSales = activeOrders.reduce((sum, o) => sum + o.totalPrice, 0);
+  const totalSetsSold =
+    activeOrders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0) +
+    donations.length;
+  const totalSales =
+    activeOrders.reduce((sum, o) => sum + o.totalPrice, 0) +
+    donations.reduce((sum, d) => sum + d.amount, 0);
   const depositsPending = activeOrders.filter(
     (o) => o.depositMarkedPaid && !o.depositConfirmed
   ).length;
@@ -32,6 +37,15 @@ export default async function AdminDashboardPage() {
           count: item.quantity,
         });
       }
+    }
+  }
+  for (const d of donations) {
+    const key = `donation-${d.hiddurLevel}`;
+    const existing = bySet.get(key);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      bySet.set(key, { name: `🎁 תרומה — ${HIDDUR_LABEL[d.hiddurLevel]}`, etrogType: "רגיל", count: 1 });
     }
   }
 

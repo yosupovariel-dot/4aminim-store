@@ -57,6 +57,49 @@ export async function createDonation(
   return { success: true, amount: donation.amount };
 }
 
+export async function updateDonation(donationId: string, formData: FormData) {
+  await verifyAdminSession();
+
+  const hiddurLevel = String(formData.get("hiddurLevel") || "");
+  const dedicationType = String(formData.get("dedicationType") || "");
+  const dedicationName = String(formData.get("dedicationName") || "").trim();
+  const donorName = String(formData.get("donorName") || "").trim();
+  const donorPhone = String(formData.get("donorPhone") || "").trim();
+
+  if (!dedicationName || !donorName || !donorPhone) return;
+  const HIDDUR_VALUES = ["KOSHER", "MEHADRIN", "MEHADRIN_MIN_HAMEHADRIN", "DIAMOND"];
+  if (!HIDDUR_VALUES.includes(hiddurLevel)) return;
+  const DEDICATION_VALUES = ["REFUAH", "ILUY_NESHAMA", "HATZLACHA"];
+  if (!DEDICATION_VALUES.includes(dedicationType)) return;
+
+  // Re-snapshot the amount if the hiddur level changed, from the current
+  // רגיל price at that level.
+  const referenceSet = await prisma.productSet.findFirst({
+    where: { kind: "REGULAR", etrogType: "רגיל", hiddurLevel: hiddurLevel as never, active: true },
+  });
+  if (!referenceSet) return;
+
+  await prisma.donation.update({
+    where: { id: donationId },
+    data: {
+      hiddurLevel: hiddurLevel as never,
+      dedicationType: dedicationType as never,
+      dedicationName,
+      donorName,
+      donorPhone,
+      amount: referenceSet.price,
+    },
+  });
+
+  revalidatePath("/admin/donations");
+}
+
+export async function deleteDonation(donationId: string) {
+  await verifyAdminSession();
+  await prisma.donation.delete({ where: { id: donationId } });
+  revalidatePath("/admin/donations");
+}
+
 export async function markDonationPaid(donationId: string) {
   await verifyAdminSession();
   await prisma.donation.update({
