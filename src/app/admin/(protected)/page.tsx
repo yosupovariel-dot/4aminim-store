@@ -1,12 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { formatILS } from "@/lib/pricing";
 import { StatCard } from "@/components/StatCard";
-import { HIDDUR_LABEL } from "@/lib/catalog";
+import { HIDDUR_LABEL, HIDDUR_ORDER, VARIETY_ORDER } from "@/lib/catalog";
+import type { HiddurLevel } from "@prisma/client";
+
+const VARIETY_RANK = new Map<string, number>(VARIETY_ORDER.map((v, i) => [v, i]));
+const HIDDUR_RANK = new Map(HIDDUR_ORDER.map((h, i) => [h, i]));
 
 export default async function AdminDashboardPage() {
   const [orders, donations] = await Promise.all([
     prisma.order.findMany({
-      include: { items: true },
+      include: { items: { include: { set: { select: { hiddurLevel: true } } } } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.donation.findMany(),
@@ -24,7 +28,10 @@ export default async function AdminDashboardPage() {
     (o) => o.depositMarkedPaid && !o.depositConfirmed
   ).length;
 
-  const bySet = new Map<string, { name: string; etrogType: string; count: number }>();
+  const bySet = new Map<
+    string,
+    { name: string; etrogType: string; hiddurLevel: HiddurLevel | null; count: number }
+  >();
   for (const o of activeOrders) {
     for (const item of o.items) {
       const existing = bySet.get(item.setId);
@@ -34,6 +41,7 @@ export default async function AdminDashboardPage() {
         bySet.set(item.setId, {
           name: item.setNameSnapshot,
           etrogType: item.etrogTypeSnapshot,
+          hiddurLevel: item.set?.hiddurLevel ?? null,
           count: item.quantity,
         });
       }
@@ -45,9 +53,24 @@ export default async function AdminDashboardPage() {
     if (existing) {
       existing.count += 1;
     } else {
-      bySet.set(key, { name: `🎁 תרומה — ${HIDDUR_LABEL[d.hiddurLevel]}`, etrogType: "רגיל", count: 1 });
+      bySet.set(key, {
+        name: `🎁 תרומה — ${HIDDUR_LABEL[d.hiddurLevel]}`,
+        etrogType: "רגיל",
+        hiddurLevel: d.hiddurLevel,
+        count: 1,
+      });
     }
   }
+
+  const sortedBySet = Array.from(bySet.values()).sort((a, b) => {
+    const varietyDiff = (VARIETY_RANK.get(a.etrogType) ?? 99) - (VARIETY_RANK.get(b.etrogType) ?? 99);
+    if (varietyDiff !== 0) return varietyDiff;
+    const hiddurDiff =
+      (a.hiddurLevel ? HIDDUR_RANK.get(a.hiddurLevel)! : 99) -
+      (b.hiddurLevel ? HIDDUR_RANK.get(b.hiddurLevel)! : 99);
+    if (hiddurDiff !== 0) return hiddurDiff;
+    return b.count - a.count;
+  });
 
   return (
     <div className="space-y-8">
@@ -70,16 +93,14 @@ export default async function AdminDashboardPage() {
           <p className="text-emerald-600 text-sm">עדיין אין הזמנות.</p>
         ) : (
           <ul className="divide-y divide-emerald-50">
-            {Array.from(bySet.values())
-              .sort((a, b) => b.count - a.count)
-              .map((row) => (
-                <li key={row.name + row.etrogType} className="flex items-center justify-between py-2">
-                  <span className="text-emerald-900">
-                    {row.name} <span className="text-emerald-600">({row.etrogType})</span>
-                  </span>
-                  <span className="font-bold text-emerald-950">{row.count} יח&apos;</span>
-                </li>
-              ))}
+            {sortedBySet.map((row) => (
+              <li key={row.name + row.etrogType} className="flex items-center justify-between py-2">
+                <span className="text-emerald-900">
+                  {row.name} <span className="text-emerald-600">({row.etrogType})</span>
+                </span>
+                <span className="font-bold text-emerald-950">{row.count} יח&apos;</span>
+              </li>
+            ))}
           </ul>
         )}
       </div>
