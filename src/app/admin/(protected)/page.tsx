@@ -25,7 +25,7 @@ export default async function AdminDashboardPage() {
     activeOrders.reduce((sum, o) => sum + o.totalPrice, 0) +
     donations.reduce((sum, d) => sum + d.amount, 0);
   const depositsPending = activeOrders.filter(
-    (o) => o.depositMarkedPaid && !o.depositConfirmed
+    (o) => o.depositMarkedPaid && !o.depositConfirmed && !o.depositExempt
   ).length;
 
   const bySet = new Map<

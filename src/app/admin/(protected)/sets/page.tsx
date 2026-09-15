@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import {
   updateSet,
   createSpecialSet,
+  createAddon,
   uploadSetImage,
   setPrimaryImage,
   deleteSetImage,
@@ -134,6 +135,50 @@ export default async function AdminSetsPage() {
           {addonSets.length === 0 && (
             <p className="text-sm text-emerald-500">אין כרגע תוספות פעילות.</p>
           )}
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-dashed border-emerald-300 bg-emerald-50/50 p-5">
+          <h3 className="mb-1 font-bold text-emerald-900">הוספת תוספת חדשה</h3>
+          <p className="mb-3 text-xs text-emerald-600">
+            למשל &quot;הדסים ספייר (להחלפה)&quot; — תוספת תופיע בסל הקניות
+            לכל לקוח, ותתווסף לסכום הכולל שהוא צריך לשלם.
+          </p>
+          <form action={createAddon} className="grid gap-3 sm:grid-cols-2">
+            <label className="text-sm sm:col-span-2">
+              <span className="mb-1 block text-emerald-700">שם התוספת</span>
+              <input
+                name="name"
+                required
+                className="w-full rounded-lg border border-emerald-200 px-3 py-1.5"
+                placeholder='למשל: "הדסים ספייר (להחלפה)"'
+              />
+            </label>
+            <label className="text-sm sm:col-span-2">
+              <span className="mb-1 block text-emerald-700">תיאור</span>
+              <textarea
+                name="description"
+                required
+                rows={2}
+                className="w-full rounded-lg border border-emerald-200 px-3 py-1.5"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block text-emerald-700">מחיר (₪)</span>
+              <input
+                type="number"
+                name="price"
+                min={1}
+                step="1"
+                required
+                className="w-full rounded-lg border border-emerald-200 px-3 py-1.5"
+              />
+            </label>
+            <div className="flex items-end sm:col-span-2">
+              <button className="rounded-full bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                יצירת התוספת
+              </button>
+            </div>
+          </form>
         </div>
       </section>
     </div>

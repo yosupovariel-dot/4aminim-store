@@ -11,6 +11,8 @@ import {
   saveAdminNotes,
   markDelivered,
   unmarkDelivered,
+  markDepositExempt,
+  unmarkDepositExempt,
   updateOrderDetails,
   deleteOrder,
 } from "@/actions/orders";
@@ -33,6 +35,8 @@ export default async function AdminOrderDetailPage({
   const saveNotesAction = saveAdminNotes.bind(null, order.id);
   const markDeliveredAction = markDelivered.bind(null, order.id);
   const unmarkDeliveredAction = unmarkDelivered.bind(null, order.id);
+  const markDepositExemptAction = markDepositExempt.bind(null, order.id);
+  const unmarkDepositExemptAction = unmarkDepositExempt.bind(null, order.id);
   const updateDetailsAction = updateOrderDetails.bind(null, order.id);
   const deleteOrderAction = deleteOrder.bind(null, order.id);
 
@@ -145,6 +149,8 @@ export default async function AdminOrderDetailPage({
           <Row label="מחיר כולל" value={formatILS(order.totalPrice / 100)} />
           {order.payFullInCash ? (
             <Row label="אופן תשלום" value="הכל במזומן במסירה" />
+          ) : order.depositExempt ? (
+            <Row label="אופן תשלום" value="פטור ממקדמה — לתשלום המחיר המלא" />
           ) : (
             <>
               <Row label="מקדמה נדרשת" value={formatILS(order.depositAmount / 100)} />
@@ -157,7 +163,9 @@ export default async function AdminOrderDetailPage({
           <Row
             label="יתרה לתשלום במסירה"
             value={formatILS(
-              (order.payFullInCash ? order.totalPrice : order.totalPrice - order.depositAmount) / 100
+              (order.payFullInCash || order.depositExempt
+                ? order.totalPrice
+                : order.totalPrice - order.depositAmount) / 100
             )}
           />
           <Row
@@ -166,6 +174,23 @@ export default async function AdminOrderDetailPage({
           />
 
           {!order.payFullInCash && (
+            <div className="pt-3">
+              <form action={order.depositExempt ? unmarkDepositExemptAction : markDepositExemptAction}>
+                <button
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                    order.depositExempt
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                  }`}
+                  title="לסימון ידני שהלקוח פטור ממקדמה, ומשלם את המחיר המלא"
+                >
+                  {order.depositExempt ? "פטור ממקדמה ✓ (לחיצה לביטול)" : "סמן כפטור ממקדמה"}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {!order.payFullInCash && !order.depositExempt && (
             <div className="pt-3">
               {order.depositConfirmed ? (
                 <div className="flex items-center gap-3">

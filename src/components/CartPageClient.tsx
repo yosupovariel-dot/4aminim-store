@@ -19,16 +19,14 @@ type Addon = {
 };
 
 export function CartPageClient({
-  addon,
+  addons,
   hiddurPricing,
 }: {
-  addon: Addon | null;
+  addons: Addon[];
   hiddurPricing: Partial<Record<HiddurLevel, number>>;
 }) {
   const { items, totalPrice, updateQuantity, removeItem, addItem } = useCart();
   const [state, formAction, pending] = useActionState(createOrder, initialOrderState);
-
-  const addonInCart = addon ? items.some((i) => i.setId === addon.id) : true;
 
   if (items.length === 0 && !state.success) {
     return (
@@ -126,34 +124,39 @@ export function CartPageClient({
             ))}
           </div>
 
-          {addon && !addonInCart && (
-            <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-              <div className="min-w-0">
-                <div className="font-bold text-amber-900">{addon.name}</div>
-                <p className="mt-0.5 text-sm text-amber-800">{addon.description}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() =>
-                  addItem(
-                    {
-                      setId: addon.id,
-                      slug: addon.slug,
-                      name: addon.name,
-                      etrogType: addon.etrogType,
-                      price: addon.price,
-                      kind: "ADDON",
-                      stockRemaining: null,
-                    },
-                    1
-                  )
-                }
-                className="shrink-0 rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600"
+          {addons
+            .filter((addon) => !items.some((i) => i.setId === addon.id))
+            .map((addon) => (
+              <div
+                key={addon.id}
+                className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4"
               >
-                הוספה — {formatILS(addon.price / 100)}
-              </button>
-            </div>
-          )}
+                <div className="min-w-0">
+                  <div className="font-bold text-amber-900">{addon.name}</div>
+                  <p className="mt-0.5 text-sm text-amber-800">{addon.description}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addItem(
+                      {
+                        setId: addon.id,
+                        slug: addon.slug,
+                        name: addon.name,
+                        etrogType: addon.etrogType,
+                        price: addon.price,
+                        kind: "ADDON",
+                        stockRemaining: null,
+                      },
+                      1
+                    )
+                  }
+                  className="shrink-0 rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600"
+                >
+                  הוספה — {formatILS(addon.price / 100)}
+                </button>
+              </div>
+            ))}
 
           <div className="mb-8 flex items-center justify-between rounded-2xl bg-emerald-50 px-5 py-4">
             <span className="font-semibold text-emerald-900">סה&quot;כ לתשלום</span>

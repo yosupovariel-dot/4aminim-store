@@ -122,6 +122,37 @@ export async function createSpecialSet(formData: FormData) {
   revalidateCatalog();
 }
 
+export async function createAddon(formData: FormData) {
+  await verifyAdminSession();
+
+  const name = String(formData.get("name") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const priceShekels = Number(formData.get("price"));
+
+  if (!name || !description) return;
+  if (!Number.isFinite(priceShekels) || priceShekels <= 0) return;
+
+  const maxSort = await prisma.productSet.aggregate({
+    where: { kind: "ADDON" },
+    _max: { sortOrder: true },
+  });
+
+  await prisma.productSet.create({
+    data: {
+      kind: "ADDON",
+      slug: slugify(name),
+      name,
+      etrogType: "תוספת",
+      description,
+      price: Math.round(priceShekels * 100),
+      sortOrder: (maxSort._max.sortOrder ?? 0) + 1,
+      active: true,
+    },
+  });
+
+  revalidateCatalog();
+}
+
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024; // 6MB
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const EXT_BY_TYPE: Record<string, string> = {

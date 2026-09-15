@@ -122,6 +122,11 @@ model Order {
   // Customer opted to pay the full amount in cash on delivery instead of
   // transferring a deposit via Bit/PayBox now.
   payFullInCash     Boolean     @default(false)
+  // Admin-only override (set after the fact, e.g. by phone arrangement) —
+  // this specific order doesn't need a deposit; the full price is due
+  // instead. Distinct from payFullInCash, which the customer chose at
+  // checkout.
+  depositExempt     Boolean     @default(false)
 
   termsAccepted     Boolean     @default(false)
   status            OrderStatus @default(PENDING)

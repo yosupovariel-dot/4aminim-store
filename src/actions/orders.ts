@@ -177,6 +177,28 @@ export async function unmarkDelivered(orderId: string) {
   await resyncOrdersSheet();
 }
 
+export async function markDepositExempt(orderId: string) {
+  await verifyAdminSession();
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { depositExempt: true },
+  });
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  await resyncOrdersSheet();
+}
+
+export async function unmarkDepositExempt(orderId: string) {
+  await verifyAdminSession();
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { depositExempt: false },
+  });
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  await resyncOrdersSheet();
+}
+
 export async function saveAdminNotes(orderId: string, formData: FormData) {
   await verifyAdminSession();
   const notes = String(formData.get("notes") || "");

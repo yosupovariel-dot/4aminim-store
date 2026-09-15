@@ -120,6 +120,15 @@ const ADDON_SETS = [
     price: 700,
     sortOrder: 1,
   },
+  {
+    slug: "spare-hadassim",
+    name: "הדסים ספייר (להחלפה)",
+    etrogType: "תוספת",
+    description:
+      "הדסים מתייבשים תוך מספר ימים — כדאי להחזיק שלישיית הדסים רזרבית כדי להחליף באמצע החג ולהמשיך לקיים את המצווה בהידור.",
+    price: 700,
+    sortOrder: 2,
+  },
 ];
 
 // A cheap, clearly-labeled set for children to hold and play with — NOT
