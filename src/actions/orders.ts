@@ -92,8 +92,16 @@ export async function createOrder(
         }
       }
 
-      const orderCount = await tx.order.count();
-      const orderNumber = 1000 + orderCount + 1;
+      // Based on the highest existing order number, not a count of rows —
+      // counting breaks the moment any order is ever deleted (the count
+      // drops, so this would recompute a number that's still taken by a
+      // surviving order and hit the unique constraint on every checkout
+      // from then on).
+      const lastOrder = await tx.order.findFirst({
+        orderBy: { orderNumber: "desc" },
+        select: { orderNumber: true },
+      });
+      const orderNumber = (lastOrder?.orderNumber ?? 1000) + 1;
 
       const order = await tx.order.create({
         data: {
