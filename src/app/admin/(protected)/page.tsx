@@ -10,7 +10,7 @@ const HIDDUR_RANK = new Map(HIDDUR_ORDER.map((h, i) => [h, i]));
 export default async function AdminDashboardPage() {
   const [orders, donations] = await Promise.all([
     prisma.order.findMany({
-      include: { items: { include: { set: { select: { hiddurLevel: true } } } } },
+      include: { items: { include: { set: { select: { kind: true, hiddurLevel: true } } } } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.donation.findMany(),
@@ -18,9 +18,13 @@ export default async function AdminDashboardPage() {
 
   const activeOrders = orders.filter((o) => o.status !== "CANCELLED");
   const totalOrders = orders.length;
+  // Add-ons (spare aravot/hadassim, קויישלך) aren't sets — exclude them so
+  // this reflects actual four-species sets sold, not accessory items.
   const totalSetsSold =
-    activeOrders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0) +
-    donations.length;
+    activeOrders.reduce(
+      (sum, o) => sum + o.items.reduce((s, i) => s + (i.set?.kind !== "ADDON" ? i.quantity : 0), 0),
+      0
+    ) + donations.length;
   const totalSales =
     activeOrders.reduce((sum, o) => sum + o.totalPrice, 0) +
     donations.reduce((sum, d) => sum + d.amount, 0);

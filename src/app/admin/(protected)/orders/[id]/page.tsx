@@ -17,6 +17,7 @@ import {
   unmarkFullyPaid,
   addOrderExtra,
   removeOrderExtra,
+  updateOrderItemPrice,
   updateOrderDetails,
   deleteOrder,
 } from "@/actions/orders";
@@ -149,13 +150,30 @@ export default async function AdminOrderDetailPage({
 
         <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm space-y-2">
           <h2 className="mb-2 font-bold text-emerald-950">פרטי הזמנה ותשלום</h2>
-          <div className="space-y-1 rounded-xl bg-emerald-50 p-3">
+          <div className="space-y-2 rounded-xl bg-emerald-50 p-3">
             {order.items.map((i) => (
-              <div key={i.id} className="flex items-center justify-between text-sm">
+              <div key={i.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
                 <span className="text-emerald-900">
                   {i.setNameSnapshot} ({i.etrogTypeSnapshot}) × {i.quantity}
                 </span>
                 <span className="flex items-center gap-2">
+                  <form
+                    action={updateOrderItemPrice.bind(null, order.id, i.id)}
+                    className="flex items-center gap-1.5"
+                  >
+                    <input
+                      type="number"
+                      name="unitPrice"
+                      min={0}
+                      step="0.01"
+                      defaultValue={i.unitPrice / 100}
+                      title="מחיר ליחידה (₪) — לא משנה את סוג הסט"
+                      className="w-20 rounded-lg border border-emerald-200 px-1.5 py-1 text-xs"
+                    />
+                    <button className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800 hover:bg-emerald-200">
+                      שמירה
+                    </button>
+                  </form>
                   <span className="font-medium text-emerald-950">
                     {formatILS((i.unitPrice * i.quantity) / 100)}
                   </span>
@@ -173,6 +191,9 @@ export default async function AdminOrderDetailPage({
               </div>
             ))}
           </div>
+          <p className="text-[11px] text-emerald-500">
+            עריכת המחיר משנה רק את ההזמנה הזו — לא את מחיר הסט בקטלוג.
+          </p>
 
           {addonSets.length > 0 && (
             <form action={addOrderExtraAction} className="flex flex-wrap items-center gap-2 pt-1">

@@ -229,6 +229,33 @@ export async function unmarkFullyPaid(orderId: string) {
   await resyncOrdersSheet();
 }
 
+// Lets the admin override a specific order item's price (e.g. a discount
+// agreed by phone) — the set itself (name/etrog type) is untouched, only
+// the price this particular order was charged. Recomputes the order total
+// from all its items; doesn't touch the already-calculated depositAmount.
+export async function updateOrderItemPrice(orderId: string, orderItemId: string, formData: FormData) {
+  await verifyAdminSession();
+
+  const priceShekels = Number(formData.get("unitPrice"));
+  if (!Number.isFinite(priceShekels) || priceShekels < 0) return;
+  const unitPrice = Math.round(priceShekels * 100);
+
+  await prisma.$transaction(async (tx) => {
+    const item = await tx.orderItem.findUnique({ where: { id: orderItemId } });
+    if (!item || item.orderId !== orderId) return;
+
+    await tx.orderItem.update({ where: { id: orderItemId }, data: { unitPrice } });
+
+    const items = await tx.orderItem.findMany({ where: { orderId } });
+    const totalPrice = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
+    await tx.order.update({ where: { id: orderId }, data: { totalPrice } });
+  });
+
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  await resyncOrdersSheet();
+}
+
 // Lets the admin attach an ADDON (e.g. an admin-only extra like spare
 // hadassim) to an already-placed order — the customer never sees or
 // chooses this; it just raises the total (and so the balance due at
