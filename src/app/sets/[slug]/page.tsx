@@ -23,9 +23,9 @@ export default async function SetDetailPage({
     set.stockTotal != null ? Math.max(set.stockTotal - set.stockSold, 0) : null;
   const soldOut = remaining !== null && remaining <= 0;
 
-  // Sold-out special sets disappear from the site entirely rather than
-  // showing a "sold out" page.
-  if (set.kind === "SPECIAL" && soldOut) {
+  // A sold-out set disappears from the site entirely (admin still
+  // sees/manages it as usual) rather than showing a "sold out" page.
+  if (soldOut) {
     notFound();
   }
 

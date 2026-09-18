@@ -84,12 +84,14 @@ export async function createOrder(
           quantity,
         });
 
-        if (set.stockTotal != null) {
-          await tx.productSet.update({
-            where: { id: set.id },
-            data: { stockSold: { increment: quantity } },
-          });
-        }
+        // Always track sold quantity, even when there's no stockTotal limit
+        // yet (unlimited) — otherwise the moment an admin later sets a real
+        // limit, stockSold is missing every sale that happened before that,
+        // and "remaining" comes out wrong (too high).
+        await tx.productSet.update({
+          where: { id: set.id },
+          data: { stockSold: { increment: quantity } },
+        });
       }
 
       // Based on the highest existing order number, not a count of rows —
@@ -292,6 +294,10 @@ export async function addOrderExtra(orderId: string, formData: FormData) {
       where: { id: orderId },
       data: { totalPrice: { increment: set.price } },
     });
+    await tx.productSet.update({
+      where: { id: set.id },
+      data: { stockSold: { increment: 1 } },
+    });
   });
 
   revalidatePath("/admin/orders");
@@ -322,6 +328,10 @@ export async function removeOrderExtra(orderId: string, orderItemId: string) {
     await tx.order.update({
       where: { id: orderId },
       data: { totalPrice: { decrement: item.unitPrice } },
+    });
+    await tx.productSet.update({
+      where: { id: set.id },
+      data: { stockSold: { decrement: 1 } },
     });
   });
 
@@ -372,7 +382,7 @@ export async function deleteOrder(orderId: string) {
     if (order.status !== "CANCELLED") {
       for (const item of order.items) {
         const set = await tx.productSet.findUnique({ where: { id: item.setId } });
-        if (set?.stockTotal != null) {
+        if (set) {
           await tx.productSet.update({
             where: { id: set.id },
             data: { stockSold: { decrement: item.quantity } },

@@ -14,15 +14,15 @@ export default async function HomePage() {
     include: { images: { orderBy: { sortOrder: "asc" }, take: 1 } },
   });
 
-  const regularSets = sets.filter((s) => s.kind === "REGULAR");
-  const specialSets = sets.filter((s) => {
-    if (s.kind !== "SPECIAL") return false;
+  const notSoldOut = (s: (typeof sets)[number]) => {
     const remaining = s.stockTotal != null ? s.stockTotal - s.stockSold : null;
-    // Once a special set sells out, it disappears from the site entirely
-    // instead of showing a "sold out" badge.
     return remaining === null || remaining > 0;
-  });
-  const kidsSets = sets.filter((s) => s.kind === "KIDS");
+  };
+  // Once a set sells out, it disappears from the site entirely instead of
+  // showing a "sold out" badge — the admin still sees/manages it as usual.
+  const regularSets = sets.filter((s) => s.kind === "REGULAR" && notSoldOut(s));
+  const specialSets = sets.filter((s) => s.kind === "SPECIAL" && notSoldOut(s));
+  const kidsSets = sets.filter((s) => s.kind === "KIDS" && notSoldOut(s));
 
   return (
     <div>
