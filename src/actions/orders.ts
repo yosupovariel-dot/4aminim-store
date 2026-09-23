@@ -119,6 +119,9 @@ export async function createOrder(
           depositMarkedPaid: data.depositMarkedPaid,
           depositMarkedAt: data.depositMarkedPaid ? new Date() : null,
           termsAccepted: true,
+          // Every incoming order is auto-confirmed — there's no manual
+          // "pending review" step in this business's workflow.
+          status: "CONFIRMED",
           items: { create: itemsToCreate },
         },
       });
